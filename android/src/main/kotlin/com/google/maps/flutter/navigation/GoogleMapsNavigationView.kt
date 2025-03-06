@@ -212,6 +212,7 @@ internal constructor(
   fun setTrafficIncidentCardsEnabled(enabled: Boolean) {
     invalidateViewAfterMapLoad()
     _navigationView.setTrafficIncidentCardsEnabled(enabled)
+ _navigationView.setTrafficPromptsEnabled(enabled)
     _isTrafficIncidentCardsEnabled = enabled
   }
 

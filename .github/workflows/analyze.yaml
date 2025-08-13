@@ -33,13 +33,13 @@ jobs:
       - name: Setup flutter
         uses: subosito/flutter-action@f2c4f6686ca8e8d6e6d0f28410eeef506ed66aff
         with:
-          flutter-version: "3.32.x"
+          flutter-version: "3.27.x"
           channel: "stable"
           cache: true
       - name: Setup melos
         uses: bluefireteam/melos-action@6085791af7036f6366c9a4b9d55105c0ef9c6388
         with:
-          melos-version: "6.3.2"
+          melos-version: "6.0.0"
       - name: "Run Flutter Analyze"
         run: melos run flutter-analyze
 
@@ -57,26 +57,26 @@ jobs:
       - name: Setup flutter
         uses: subosito/flutter-action@f2c4f6686ca8e8d6e6d0f28410eeef506ed66aff
         with:
-          flutter-version: "3.32.x"
+          flutter-version: "3.27.x"
           channel: "stable"
           cache: true
       - name: Setup melos
         uses: bluefireteam/melos-action@6085791af7036f6366c9a4b9d55105c0ef9c6388
         with:
-          melos-version: "6.3.2"
+          melos-version: "6.0.0"
       - name: Restore Cache
         uses: actions/cache/restore@v4
         id: cache
         with:
           path: /home/linuxbrew/.linuxbrew
           key: ${{ runner.os }}-linuxbrew
-      - name: Install swift-format 600.0.0
+      - name: Install swiftformat 0.54.6
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-          curl -O https://raw.githubusercontent.com/Homebrew/homebrew-core/402e262f48947bad849ea7793752ff16b7038406/Formula/s/swift-format.rb
-          echo 'brew "swift-format.rb"' > Brewfile
+          curl -O https://raw.githubusercontent.com/Homebrew/homebrew-core/4564fbc21a326c4eb349327ce327cbe983bf302a/Formula/s/swiftformat.rb
+          echo 'brew "swiftformat.rb"' > Brewfile
           brew bundle
       - name: Save Cache
         uses: actions/cache/save@v4
@@ -84,10 +84,10 @@ jobs:
         with:
           path: /home/linuxbrew/.linuxbrew
           key: ${{ runner.os }}-linuxbrew
-      - name: Print swift-format version
+      - name: Formatter version
         run: |
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-          swift-format --version
+          swiftformat --version
       - name: Run format
         if: ${{ success() || failure() }}
         run: |

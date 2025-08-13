@@ -50,6 +50,11 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
   var isAttachedToSession: Bool = false
   private let _isCarPlayView: Bool
 
+  // As prompt visibility settings is handled by the navigator, value is
+  // stored here to handle the session attach. On android prompts visibility
+  // is handled by the view.
+  private var _isTrafficPromptsEnabled: Bool = true
+
   public func view() -> UIView {
     _mapView
   }
@@ -62,15 +67,17 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
     return nil
   }
 
-  init(frame: CGRect,
-       viewIdentifier viewId: Int64?,
-       isNavigationView: Bool,
-       viewRegistry registry: GoogleMapsNavigationViewRegistry,
-       viewEventApi: ViewEventApi?,
-       navigationUIEnabledPreference: NavigationUIEnabledPreference,
-       mapConfiguration: MapConfiguration,
-       imageRegistry: ImageRegistry,
-       isCarPlayView: Bool) {
+  init(
+    frame: CGRect,
+    viewIdentifier viewId: Int64?,
+    isNavigationView: Bool,
+    viewRegistry registry: GoogleMapsNavigationViewRegistry,
+    viewEventApi: ViewEventApi?,
+    navigationUIEnabledPreference: NavigationUIEnabledPreference,
+    mapConfiguration: MapConfiguration,
+    imageRegistry: ImageRegistry,
+    isCarPlayView: Bool
+  ) {
     if !isCarPlayView, viewId == nil || viewEventApi == nil {
       fatalError("For non-carplay map view viewId and viewEventApi is required")
     }
@@ -200,8 +207,10 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
   }
 
   private func findGMSPolyline(polylineId: String) throws -> GMSPolyline {
-    if let polyline = _gmsPolylines
-      .first(where: { polyline in polyline.getPolylineId() == polylineId }) {
+    if let polyline =
+      _gmsPolylines
+      .first(where: { polyline in polyline.getPolylineId() == polylineId })
+    {
       return polyline
     } else {
       throw GoogleMapsNavigationViewError.polylineNotFound
@@ -209,8 +218,10 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
   }
 
   private func findGMSCircle(circleId: String) throws -> GMSCircle {
-    if let circle = _gmsCircles
-      .first(where: { circle in circle.getCircleId() == circleId }) {
+    if let circle =
+      _gmsCircles
+      .first(where: { circle in circle.getCircleId() == circleId })
+    {
       return circle
     } else {
       throw GoogleMapsNavigationViewError.circleNotFound
@@ -246,7 +257,8 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
   func updateMyLocationButton() throws {
     // Align the behavior with Android: the default value of myLocationButton is true,
     // but it is not shown if my location is disabled.
-    _mapView.settings.myLocationButton = _mapView
+    _mapView.settings.myLocationButton =
+      _mapView
       .isMyLocationEnabled && _myLocationButton
   }
 
@@ -441,8 +453,12 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
         ) { _ in }
     }
 
+    // Update traffic prompts enabled state
+    session.navigator?.shouldDisplayPrompts = _isTrafficPromptsEnabled
+
     _mapView.navigationUIDelegate = self
     isAttachedToSession = true
+
     return result
   }
 
@@ -514,6 +530,27 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
     _mapView.settings.showsIncidentCards = enabled
   }
 
+  func isReportIncidentButtonEnabled() -> Bool {
+    return _mapView.settings.isNavigationReportIncidentButtonEnabled
+  }
+
+  func setReportIncidentButtonEnabled(_ enabled: Bool) {
+    _mapView.settings.isNavigationReportIncidentButtonEnabled = enabled
+  }
+
+  func isTrafficPromptsEnabled() -> Bool {
+    return _isTrafficPromptsEnabled
+  }
+
+  func setTrafficPromptsEnabled(_ enabled: Bool) {
+    _isTrafficPromptsEnabled = enabled
+
+    // If navigation session is available, set the value.
+    if let navigator = try? GoogleMapsNavigationSessionManager.shared.getNavigator() {
+      navigator.shouldDisplayPrompts = enabled
+    }
+  }
+
   func isNavigationUIEnabled() -> Bool {
     _mapView.isNavigationEnabled
   }
@@ -526,12 +563,13 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
 
       if !enabled {
         let camera = _mapView.camera
-        _mapView.animate(to: GMSCameraPosition(
-          target: camera.target,
-          zoom: camera.zoom,
-          bearing: 0.0,
-          viewingAngle: 0.0
-        ))
+        _mapView.animate(
+          to: GMSCameraPosition(
+            target: camera.target,
+            zoom: camera.zoom,
+            bearing: 0.0,
+            viewingAngle: 0.0
+          ))
       }
     }
   }
@@ -569,7 +607,8 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
   }
 
   func addMarkers(markers: [MarkerDto]) -> [MarkerDto] {
-    let markers: [MarkerDto] = markers
+    let markers: [MarkerDto] =
+      markers
       .compactMap { $0 }
       .map { marker in
         let markerController = MarkerController(markerId: marker.markerId)
@@ -584,7 +623,8 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
   }
 
   func updateMarkers(markers: [MarkerDto]) throws -> [MarkerDto] {
-    let markers: [MarkerDto] = try markers
+    let markers: [MarkerDto] =
+      try markers
       .compactMap { $0 }
       .compactMap { updatedMarker in
         let markerController = try findMarkerController(markerId: updatedMarker.markerId)
@@ -619,7 +659,8 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
   }
 
   func addPolygons(polygons: [PolygonDto]) -> [PolygonDto] {
-    let polygons: [PolygonDto] = polygons
+    let polygons: [PolygonDto] =
+      polygons
       .compactMap { $0 }
       .map { polygon in
         let gmsPolygon = GMSPolygon()
@@ -635,7 +676,8 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
   }
 
   func updatePolygons(polygons: [PolygonDto]) throws -> [PolygonDto] {
-    let polygons: [PolygonDto] = try polygons
+    let polygons: [PolygonDto] =
+      try polygons
       .compactMap { $0 }
       .compactMap { pigeonPolygon in
         let gmsPolygon = try findGMSPolygon(polygonId: pigeonPolygon.polygonId)
@@ -670,7 +712,8 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
   }
 
   func addPolylines(polylines: [PolylineDto]) -> [PolylineDto] {
-    let polylines: [PolylineDto] = polylines
+    let polylines: [PolylineDto] =
+      polylines
       .compactMap { $0 }
       .map { polyline in
         let gmsPolyline = GMSPolyline()
@@ -686,7 +729,8 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
   }
 
   func updatePolylines(polylines: [PolylineDto]) throws -> [PolylineDto] {
-    let polylines: [PolylineDto] = try polylines
+    let polylines: [PolylineDto] =
+      try polylines
       .compactMap { $0 }
       .compactMap { pigeonPolyline in
         let gmsPolyline = try findGMSPolyline(polylineId: pigeonPolyline.polylineId)
@@ -721,7 +765,8 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
   }
 
   func addCircles(circles: [CircleDto]) -> [CircleDto] {
-    let circles: [CircleDto] = circles
+    let circles: [CircleDto] =
+      circles
       .compactMap { $0 }
       .map { circle in
         let gmsCircle = GMSCircle()
@@ -737,7 +782,8 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
   }
 
   func updateCircles(circles: [CircleDto]) throws -> [CircleDto] {
-    let circles: [CircleDto] = try circles
+    let circles: [CircleDto] =
+      try circles
       .compactMap { $0 }
       .compactMap { pigeonCircle in
         let gmsCircle = try findGMSCircle(circleId: pigeonCircle.circleId)
@@ -792,8 +838,10 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
     }
   }
 
-  private func sendMarkerDragEvent(marker: GMSMarker,
-                                   eventType: MarkerDragEventTypeDto) {
+  private func sendMarkerDragEvent(
+    marker: GMSMarker,
+    eventType: MarkerDragEventTypeDto
+  ) {
     do {
       let markerController = try findMarkerController(gmsMarker: marker)
       getViewEventApi()?.onMarkerDragEvent(
@@ -820,7 +868,7 @@ public class GoogleMapsNavigationView: NSObject, FlutterPlatformView, ViewSettle
     _consumeMyLocationButtonClickEventsEnabled
   }
 
-  func registerOnCameraChangedListener() {
+  func enableOnCameraChangedEvents() {
     // Camera listeners cannot be controlled at runtime, so use this
     // boolean to control if camera changes are sent over the event channel.
     _listenCameraChanges = true
@@ -979,26 +1027,26 @@ extension GoogleMapsNavigationView: GMSMapViewDelegate {
   }
 }
 
-private extension MarkerDto {
-  func isVisible() -> Bool {
+extension MarkerDto {
+  fileprivate func isVisible() -> Bool {
     options.visible
   }
 }
 
-private extension PolygonDto {
-  func isVisible() -> Bool {
+extension PolygonDto {
+  fileprivate func isVisible() -> Bool {
     options.visible
   }
 }
 
-private extension PolylineDto {
-  func isVisible() -> Bool {
+extension PolylineDto {
+  fileprivate func isVisible() -> Bool {
     options.visible ?? true
   }
 }
 
-private extension CircleDto {
-  func isVisible() -> Bool {
+extension CircleDto {
+  fileprivate func isVisible() -> Bool {
     options.visible
   }
 }

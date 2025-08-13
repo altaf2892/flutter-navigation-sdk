@@ -23,10 +23,10 @@ import com.google.android.libraries.navigation.NavigationViewForAuto
 class GoogleMapsAutoMapView
 internal constructor(
   mapOptions: MapOptions,
-  private val viewRegistry: GoogleMapsViewRegistry,
+  viewRegistry: GoogleMapsViewRegistry,
   imageRegistry: ImageRegistry,
   private val mapView: NavigationViewForAuto,
-  private val map: GoogleMap,
+  map: GoogleMap,
 ) : GoogleMapsBaseMapView(null, mapOptions, null, imageRegistry) {
   override fun getView(): View {
     return mapView
@@ -38,7 +38,6 @@ internal constructor(
     imageRegistry.mapViewInitializationComplete()
     viewRegistry.registerAndroidAutoView(this)
     mapReady()
-    invalidateViewAfterMapLoad()
   }
 
   // Handled by AndroidAutoBaseScreen.

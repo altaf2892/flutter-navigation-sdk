@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -31,12 +30,7 @@ class GoogleMapsNavigationAndroid extends GoogleMapsNavigationPlatform {
     MapViewAPIImpl viewAPI,
     AutoMapViewAPIImpl autoAPI,
     ImageRegistryAPIImpl imageRegistryAPI,
-  ) : super(
-          navigationSessionAPI,
-          viewAPI,
-          imageRegistryAPI,
-          autoAPI,
-        );
+  ) : super(navigationSessionAPI, viewAPI, imageRegistryAPI, autoAPI);
 
   /// Registers the Android implementation of GoogleMapsNavigationPlatform.
   static void registerWith() {
@@ -49,29 +43,39 @@ class GoogleMapsNavigationAndroid extends GoogleMapsNavigationPlatform {
   }
 
   @override
-  Widget buildMapView(
-      {required MapViewInitializationOptions initializationOptions,
-      required MapReadyCallback onMapReady}) {
+  Widget buildMapView({
+    required MapViewInitializationOptions initializationOptions,
+    required PlatformViewCreatedCallback onPlatformViewCreated,
+    required MapReadyCallback onMapReady,
+  }) {
     return _buildView(
-        mapViewType: MapViewType.map,
-        initializationOptions: initializationOptions,
-        onMapReady: onMapReady);
+      mapViewType: MapViewType.map,
+      initializationOptions: initializationOptions,
+      onPlatformViewCreated: onPlatformViewCreated,
+      onMapReady: onMapReady,
+    );
   }
 
   @override
-  Widget buildNavigationView(
-      {required MapViewInitializationOptions initializationOptions,
-      required MapReadyCallback onMapReady}) {
+  Widget buildNavigationView({
+    required MapViewInitializationOptions initializationOptions,
+    required PlatformViewCreatedCallback onPlatformViewCreated,
+    required MapReadyCallback onMapReady,
+  }) {
     return _buildView(
-        mapViewType: MapViewType.navigation,
-        initializationOptions: initializationOptions,
-        onMapReady: onMapReady);
+      mapViewType: MapViewType.navigation,
+      initializationOptions: initializationOptions,
+      onPlatformViewCreated: onPlatformViewCreated,
+      onMapReady: onMapReady,
+    );
   }
 
-  Widget _buildView(
-      {required MapViewType mapViewType,
-      required MapViewInitializationOptions initializationOptions,
-      required MapReadyCallback onMapReady}) {
+  Widget _buildView({
+    required MapViewType mapViewType,
+    required MapViewInitializationOptions initializationOptions,
+    required PlatformViewCreatedCallback onPlatformViewCreated,
+    required MapReadyCallback onMapReady,
+  }) {
     // Initialize method channel for view communication if needed.
     viewAPI.ensureViewAPISetUp();
 
@@ -79,44 +83,42 @@ class GoogleMapsNavigationAndroid extends GoogleMapsNavigationPlatform {
     const String viewType = 'google_navigation_flutter';
 
     // Build creation params used to initialize navigation view with initial parameters
-    final ViewCreationOptionsDto creationParams =
-        viewAPI.buildNavigationViewCreationOptions(
-      mapViewType,
-      initializationOptions,
-    );
+    final ViewCreationOptionsDto creationParams = viewAPI
+        .buildPlatformViewCreationOptions(mapViewType, initializationOptions);
 
-    return PlatformViewLink(
+    return AndroidView(
       viewType: viewType,
-      surfaceFactory:
-          (BuildContext context, PlatformViewController controller) {
-        return AndroidViewSurface(
-          controller: controller as AndroidViewController,
-          gestureRecognizers: initializationOptions.gestureRecognizers,
-          hitTestBehavior: PlatformViewHitTestBehavior.opaque,
-        );
+      onPlatformViewCreated: (int viewId) async {
+        try {
+          onPlatformViewCreated(viewId);
+
+          // On Android the map is initialized asyncronously.
+          // Wait map to be ready before calling [onMapReady] callback
+          await viewAPI.awaitMapReady(viewId: viewId);
+          onMapReady(viewId);
+        } on PlatformException catch (exception, stack) {
+          if (exception.code == 'viewNotFound') {
+            // This exeption can happen if the view is disposed before the calls
+            // are made to the platform side. We can ignore this exception as
+            // the view is already disposed.
+            return;
+          } else {
+            // Pass other exceptions to the Flutter error handler.
+            FlutterError.reportError(
+              FlutterErrorDetails(
+                exception: exception,
+                stack: stack,
+                library: 'google_navigation_flutter',
+                context: ErrorDescription(exception.message ?? ''),
+              ),
+            );
+          }
+        }
       },
-      onCreatePlatformView: (PlatformViewCreationParams params) {
-        return PlatformViewsService.initSurfaceAndroidView(
-          id: params.id,
-          viewType: viewType,
-          layoutDirection: initializationOptions.layoutDirection,
-          creationParams: creationParams.encode(),
-          creationParamsCodec: const StandardMessageCodec(),
-          onFocus: () {
-            params.onFocusChanged(true);
-          },
-        )
-          ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
-          ..addOnPlatformViewCreatedListener(
-            (int viewId) async {
-              // On Android the map is initialized asyncronously.
-              // Wait map to be ready before calling [onMapReady] callback
-              await viewAPI.awaitMapReady(viewId: viewId);
-              onMapReady(viewId);
-            },
-          )
-          ..create();
-      },
+      gestureRecognizers: initializationOptions.gestureRecognizers,
+      layoutDirection: initializationOptions.layoutDirection,
+      creationParams: creationParams,
+      creationParamsCodec: ViewCreationApi.pigeonChannelCodec,
     );
   }
 
@@ -132,6 +134,7 @@ class AndroidNavigationSessionAPIImpl extends NavigationSessionAPIImpl {
   @override
   Future<void> allowBackgroundLocationUpdates(bool allow) {
     throw UnsupportedError(
-        'allowBackgroundLocationUpdates(bool allow) is iOS only function and should not be called from Android.');
+      'allowBackgroundLocationUpdates(bool allow) is iOS only function and should not be called from Android.',
+    );
   }
 }

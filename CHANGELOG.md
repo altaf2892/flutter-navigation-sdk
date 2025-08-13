@@ -1,3 +1,65 @@
+# Changelog
+
+## [0.6.4](https://github.com/googlemaps/flutter-navigation-sdk/compare/0.6.3...0.6.4) (2025-08-08)
+
+
+### Bug Fixes
+
+* waypoint conversion issue while using placeId ([#439](https://github.com/googlemaps/flutter-navigation-sdk/issues/439)) ([9280761](https://github.com/googlemaps/flutter-navigation-sdk/commit/9280761ee7fd927677e65ee9b6d446e89929dca2))
+
+## [0.6.3](https://github.com/googlemaps/flutter-navigation-sdk/compare/0.6.2...0.6.3) (2025-08-05)
+
+
+### Bug Fixes
+
+* fix background location updates on iOS ([#404](https://github.com/googlemaps/flutter-navigation-sdk/issues/404)) ([7389afe](https://github.com/googlemaps/flutter-navigation-sdk/commit/7389afe0e4ac9a1a84ce79b4bea287f1b08e78b1))
+
+## [0.6.2](https://github.com/googlemaps/flutter-navigation-sdk/compare/0.6.1...0.6.2) (2025-06-24)
+
+
+### Features
+
+* upgrade dependencies and environment requirements ([#375](https://github.com/googlemaps/flutter-navigation-sdk/issues/375)) ([5a83661](https://github.com/googlemaps/flutter-navigation-sdk/commit/5a83661676728c265747f51cd61a392561ee4875))
+
+
+### Bug Fixes
+
+* add assert to NavigationWaypoint constructor ([#387](https://github.com/googlemaps/flutter-navigation-sdk/issues/387)) ([aff35af](https://github.com/googlemaps/flutter-navigation-sdk/commit/aff35af4268b250909e7a6768a98c457584b0fdf))
+
+## [0.6.1](https://github.com/googlemaps/flutter-navigation-sdk/compare/0.6.0...0.6.1) (2025-05-14)
+
+
+### Bug Fixes
+
+* error handling for awaitMapReady calls ([#353](https://github.com/googlemaps/flutter-navigation-sdk/issues/353)) ([867f500](https://github.com/googlemaps/flutter-navigation-sdk/commit/867f500c338702d8309e64e36793a5066ed5c2cb))
+* hide report incident button from the carplay view ([#364](https://github.com/googlemaps/flutter-navigation-sdk/issues/364)) ([794a890](https://github.com/googlemaps/flutter-navigation-sdk/commit/794a89041d1cbea712d527a772b6f9ea5f5bd44b))
+
+## [0.6.0](https://github.com/googlemaps/flutter-navigation-sdk/compare/0.5.2...0.6.0) (2025-04-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* switch to TLHC mode to fix rendering issues on Android ([#340](https://github.com/googlemaps/flutter-navigation-sdk/issues/340))
+
+### Features
+
+* support for real-time disruption settings ([#338](https://github.com/googlemaps/flutter-navigation-sdk/issues/338)) ([97c803f](https://github.com/googlemaps/flutter-navigation-sdk/commit/97c803f86182b80577ecc7f3f230963cd8724168))
+* switch to TLHC mode to fix rendering issues on Android ([#340](https://github.com/googlemaps/flutter-navigation-sdk/issues/340)) ([76685a7](https://github.com/googlemaps/flutter-navigation-sdk/commit/76685a7a9f9ce5f745457bdfe48e47c4f02b81c4))
+* update navigation SDKs ([#332](https://github.com/googlemaps/flutter-navigation-sdk/issues/332)) ([ed31ce0](https://github.com/googlemaps/flutter-navigation-sdk/commit/ed31ce041d49fee489b984f24a27831f203b8935))
+
+
+### Bug Fixes
+
+* initialize view listeners on platform view creation ([#342](https://github.com/googlemaps/flutter-navigation-sdk/issues/342)) ([e113fdd](https://github.com/googlemaps/flutter-navigation-sdk/commit/e113fdd7846a1ccc24038b648cbcb5d36828bc66))
+
+## [0.5.2](https://github.com/googlemaps/flutter-navigation-sdk/compare/0.5.1...0.5.2) (2025-03-31)
+
+
+### Bug Fixes
+
+* polyline, polygon and circle click events ([#326](https://github.com/googlemaps/flutter-navigation-sdk/issues/326)) ([71ad280](https://github.com/googlemaps/flutter-navigation-sdk/commit/71ad2806e9a023d60b7452c8ce737cdc529ac5e9))
+* update minimum supported SDK version to Flutter 3.27/Dart 3.6. ([#301](https://github.com/googlemaps/flutter-navigation-sdk/issues/301)) ([32e5b9f](https://github.com/googlemaps/flutter-navigation-sdk/commit/32e5b9f9fa7df408480d38413801cd5a2a0cf6c4))
+
 ## [0.5.1](https://github.com/googlemaps/flutter-navigation-sdk/compare/0.5.0...0.5.1) (2025-02-27)
 
 

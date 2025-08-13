@@ -15,8 +15,6 @@
 import Flutter
 import UIKit
 
-extension FlutterError: Error {}
-
 public class GoogleMapsNavigationPlugin: NSObject, FlutterPlugin {
   private static var viewRegistry: GoogleMapsNavigationViewRegistry?
   private static var viewMessageHandler: GoogleMapsNavigationViewMessageHandler?
@@ -40,8 +38,14 @@ public class GoogleMapsNavigationPlugin: NSObject, FlutterPlugin {
     }
   }
 
-  static var pluginInitializedCallback: ((GoogleMapsNavigationViewRegistry, AutoViewEventApi,
-                                          ImageRegistry) -> Void)? {
+  static var pluginInitializedCallback:
+    (
+      (
+        GoogleMapsNavigationViewRegistry, AutoViewEventApi,
+        ImageRegistry
+      ) -> Void
+    )?
+  {
     didSet {
       if isPluginInitialized {
         pluginInitializedCallback?(viewRegistry!, autoViewEventApi!, imageRegistry!)

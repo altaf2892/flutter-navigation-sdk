@@ -40,7 +40,11 @@ class GoogleMapsViewMessageHandler(private val viewRegistry: GoogleMapsViewRegis
   }
 
   override fun awaitMapReady(viewId: Long, callback: (Result<Unit>) -> Unit) {
-    return getView(viewId.toInt()).awaitMapReady(callback)
+    try {
+      getView(viewId.toInt()).awaitMapReady(callback)
+    } catch (e: Throwable) {
+      callback(Result.failure(e))
+    }
   }
 
   override fun isMyLocationEnabled(viewId: Long): Boolean {
@@ -356,6 +360,22 @@ class GoogleMapsViewMessageHandler(private val viewRegistry: GoogleMapsViewRegis
     getNavigationView(viewId.toInt()).setTrafficIncidentCardsEnabled(enabled)
   }
 
+  override fun isReportIncidentButtonEnabled(viewId: Long): Boolean {
+    return getNavigationView(viewId.toInt()).isReportIncidentButtonEnabled()
+  }
+
+  override fun setReportIncidentButtonEnabled(viewId: Long, enabled: Boolean) {
+    getNavigationView(viewId.toInt()).setReportIncidentButtonEnabled(enabled)
+  }
+
+  override fun isTrafficPromptsEnabled(viewId: Long): Boolean {
+    return getNavigationView(viewId.toInt()).isTrafficPromptsEnabled()
+  }
+
+  override fun setTrafficPromptsEnabled(viewId: Long, enabled: Boolean) {
+    getNavigationView(viewId.toInt()).setTrafficPromptsEnabled(enabled)
+  }
+
   override fun isNavigationUIEnabled(viewId: Long): Boolean {
     return getNavigationView(viewId.toInt()).isNavigationUIEnabled()
   }
@@ -472,8 +492,8 @@ class GoogleMapsViewMessageHandler(private val viewRegistry: GoogleMapsViewRegis
     getView(viewId.toInt()).clearCircles()
   }
 
-  override fun registerOnCameraChangedListener(viewId: Long) {
-    getView(viewId.toInt()).registerOnCameraChangedListener()
+  override fun enableOnCameraChangedEvents(viewId: Long) {
+    getView(viewId.toInt()).enableOnCameraChangedEvents()
   }
 
   override fun setPadding(viewId: Long, padding: MapPaddingDto) {

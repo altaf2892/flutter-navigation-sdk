@@ -22,8 +22,11 @@ import 'package:mockito/mockito.dart';
 import 'google_navigation_flutter_test.mocks.dart';
 import 'messages_test.g.dart';
 
-@GenerateMocks(
-    <Type>[TestNavigationSessionApi, TestMapViewApi, TestImageRegistryApi])
+@GenerateMocks(<Type>[
+  TestNavigationSessionApi,
+  TestMapViewApi,
+  TestImageRegistryApi,
+])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   void onNavigationViewCreated(GoogleNavigationViewController controller) {}
@@ -35,27 +38,27 @@ void main() {
 
   final List<GoogleMapsNavigationPlatform> platforms =
       <GoogleMapsNavigationPlatform>[
-    GoogleMapsNavigationAndroid(
-      AndroidNavigationSessionAPIImpl(),
-      MapViewAPIImpl(),
-      AutoMapViewAPIImpl(),
-      ImageRegistryAPIImpl(),
-    ),
-    GoogleMapsNavigationIOS(
-      NavigationSessionAPIImpl(),
-      MapViewAPIImpl(),
-      AutoMapViewAPIImpl(),
-      ImageRegistryAPIImpl(),
-    ),
-  ];
+        GoogleMapsNavigationAndroid(
+          AndroidNavigationSessionAPIImpl(),
+          MapViewAPIImpl(),
+          AutoMapViewAPIImpl(),
+          ImageRegistryAPIImpl(),
+        ),
+        GoogleMapsNavigationIOS(
+          NavigationSessionAPIImpl(),
+          MapViewAPIImpl(),
+          AutoMapViewAPIImpl(),
+          ImageRegistryAPIImpl(),
+        ),
+      ];
 
   setUp(() {
     sessionMockApi = MockTestNavigationSessionApi();
     viewMockApi = MockTestMapViewApi();
     imageRegistryMockApi = MockTestImageRegistryApi();
-    TestNavigationSessionApi.setup(sessionMockApi);
-    TestMapViewApi.setup(viewMockApi);
-    TestImageRegistryApi.setup(imageRegistryMockApi);
+    TestNavigationSessionApi.setUp(sessionMockApi);
+    TestMapViewApi.setUp(viewMockApi);
+    TestImageRegistryApi.setUp(imageRegistryMockApi);
   });
 
   void verifyEnabled(VerificationResult result, bool enabled) {
@@ -69,8 +72,9 @@ void main() {
         GoogleMapsNavigationPlatform.instance = platform;
       });
 
-      testWidgets('renders Google Maps Navigation View',
-          (WidgetTester tester) async {
+      testWidgets('renders Google Maps Navigation View', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           MaterialApp(
             home: GoogleMapsNavigationView(
@@ -83,11 +87,7 @@ void main() {
 
       testWidgets('renders Google Maps View', (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: GoogleMapsMapView(
-              onViewCreated: onMapViewCreated,
-            ),
-          ),
+          MaterialApp(home: GoogleMapsMapView(onViewCreated: onMapViewCreated)),
         );
         expect(find.byType(GoogleMapsMapView), findsOneWidget);
       });
@@ -95,39 +95,48 @@ void main() {
       group('Navigation view API', () {
         test('Await map ready api call', () async {
           // Mock api response
-          when(viewMockApi.awaitMapReady(any))
-              .thenAnswer((Invocation _) async => ());
+          when(
+            viewMockApi.awaitMapReady(any),
+          ).thenAnswer((Invocation _) async => ());
 
           // Await map ready
-          await GoogleMapsNavigationPlatform.instance.viewAPI
-              .awaitMapReady(viewId: 0);
+          await GoogleMapsNavigationPlatform.instance.viewAPI.awaitMapReady(
+            viewId: 0,
+          );
 
           // Verify correct message sent from view api
-          final VerificationResult result =
-              verify(viewMockApi.awaitMapReady(captureAny));
+          final VerificationResult result = verify(
+            viewMockApi.awaitMapReady(captureAny),
+          );
           final int viewId = result.captured[0] as int;
 
           // Verify message
           expect(viewId, 0);
         });
 
-        testWidgets('Test camera position and modes',
-            (WidgetTester tester) async {
+        testWidgets('Test camera position and modes', (
+          WidgetTester tester,
+        ) async {
           const int viewIdIn = 1;
           final GoogleNavigationViewController controller =
               GoogleNavigationViewController(viewIdIn);
 
           final LatLngDto targetIn = LatLngDto(latitude: 5.0, longitude: 6.0);
           final CameraPositionDto positionIn = CameraPositionDto(
-              bearing: 20, target: targetIn, tilt: 30, zoom: 2.0);
+            bearing: 20,
+            target: targetIn,
+            tilt: 30,
+            zoom: 2.0,
+          );
           when(viewMockApi.getCameraPosition(any)).thenReturn(positionIn);
 
           // Get camera position
 
           final CameraPosition positionOut =
               await controller.getCameraPosition();
-          final VerificationResult result =
-              verify(viewMockApi.getCameraPosition(captureAny));
+          final VerificationResult result = verify(
+            viewMockApi.getCameraPosition(captureAny),
+          );
           final int viewIdOut = result.captured[0] as int;
 
           expect(viewIdOut, viewIdIn);
@@ -142,7 +151,8 @@ void main() {
           CameraPerspective perspectiveIn = CameraPerspective.topDownHeadingUp;
           await controller.followMyLocation(perspectiveIn);
           VerificationResult perspectiveResult = verify(
-              viewMockApi.followMyLocation(captureAny, captureAny, captureAny));
+            viewMockApi.followMyLocation(captureAny, captureAny, captureAny),
+          );
           CameraPerspectiveDto perspective =
               perspectiveResult.captured[1] as CameraPerspectiveDto;
           double? zoomLevelOut = perspectiveResult.captured[2] as double?;
@@ -153,10 +163,13 @@ void main() {
 
           perspectiveIn = CameraPerspective.topDownHeadingUp;
           const double zoomLevelIn = 5.0;
-          await controller.followMyLocation(perspectiveIn,
-              zoomLevel: zoomLevelIn);
+          await controller.followMyLocation(
+            perspectiveIn,
+            zoomLevel: zoomLevelIn,
+          );
           perspectiveResult = verify(
-              viewMockApi.followMyLocation(captureAny, captureAny, captureAny));
+            viewMockApi.followMyLocation(captureAny, captureAny, captureAny),
+          );
           perspective = perspectiveResult.captured[1] as CameraPerspectiveDto;
           zoomLevelOut = perspectiveResult.captured[2] as double?;
           expect(perspectiveIn.toDto(), perspective);
@@ -170,7 +183,11 @@ void main() {
 
           final LatLngDto targetIn = LatLngDto(latitude: 5.0, longitude: 6.0);
           final CameraPositionDto positionIn = CameraPositionDto(
-              bearing: 20, target: targetIn, tilt: 30, zoom: 2.0);
+            bearing: 20,
+            target: targetIn,
+            tilt: 30,
+            zoom: 2.0,
+          );
           when(viewMockApi.getCameraPosition(any)).thenReturn(positionIn);
 
           // Animate camera to camera position
@@ -179,20 +196,30 @@ void main() {
           const int durationMsec = 600;
           const Duration duration = Duration(milliseconds: durationMsec);
 
-          when(viewMockApi.animateCameraToCameraPosition(any, any, any))
-              .thenAnswer((Invocation _) async => true);
+          when(
+            viewMockApi.animateCameraToCameraPosition(any, any, any),
+          ).thenAnswer((Invocation _) async => true);
 
-          const CameraPosition positionIn2 =
-              CameraPosition(bearing: 20, target: latLngIn, tilt: 30);
+          const CameraPosition positionIn2 = CameraPosition(
+            bearing: 20,
+            target: latLngIn,
+            tilt: 30,
+          );
           await controller.animateCamera(
-              CameraUpdate.newCameraPosition(positionIn2),
-              duration: duration, onFinished: (bool success) {
-            expect(success, true);
-          });
+            CameraUpdate.newCameraPosition(positionIn2),
+            duration: duration,
+            onFinished: (bool success) {
+              expect(success, true);
+            },
+          );
 
           VerificationResult result = verify(
-              viewMockApi.animateCameraToCameraPosition(
-                  captureAny, captureAny, captureAny));
+            viewMockApi.animateCameraToCameraPosition(
+              captureAny,
+              captureAny,
+              captureAny,
+            ),
+          );
           final CameraPositionDto positionOut2 =
               result.captured[1] as CameraPositionDto;
 
@@ -206,16 +233,25 @@ void main() {
 
           // Animate camera to co-ordinates
 
-          when(viewMockApi.animateCameraToLatLng(any, any, any))
-              .thenAnswer((Invocation _) async => true);
+          when(
+            viewMockApi.animateCameraToLatLng(any, any, any),
+          ).thenAnswer((Invocation _) async => true);
 
-          await controller.animateCamera(CameraUpdate.newLatLng(latLngIn),
-              duration: duration, onFinished: (bool success) {
-            expect(success, true);
-          });
+          await controller.animateCamera(
+            CameraUpdate.newLatLng(latLngIn),
+            duration: duration,
+            onFinished: (bool success) {
+              expect(success, true);
+            },
+          );
 
-          result = verify(viewMockApi.animateCameraToLatLng(
-              captureAny, captureAny, captureAny));
+          result = verify(
+            viewMockApi.animateCameraToLatLng(
+              captureAny,
+              captureAny,
+              captureAny,
+            ),
+          );
           final LatLngDto latLngOut = result.captured[1] as LatLngDto;
 
           expect(viewId, result.captured[0] as int);
@@ -225,21 +261,32 @@ void main() {
 
           // Animate camera to co-ordinate bounds
 
-          when(viewMockApi.animateCameraToLatLngBounds(any, any, any, any))
-              .thenAnswer((Invocation _) async => true);
+          when(
+            viewMockApi.animateCameraToLatLngBounds(any, any, any, any),
+          ).thenAnswer((Invocation _) async => true);
 
           const LatLng latLngIn2 = LatLng(latitude: 7.0, longitude: 9.0);
-          final LatLngBounds boundsIn =
-              LatLngBounds(southwest: latLngIn, northeast: latLngIn2);
+          final LatLngBounds boundsIn = LatLngBounds(
+            southwest: latLngIn,
+            northeast: latLngIn2,
+          );
           const double paddingIn = 2.0;
           await controller.animateCamera(
-              CameraUpdate.newLatLngBounds(boundsIn, padding: paddingIn),
-              duration: duration, onFinished: (bool success) {
-            expect(success, true);
-          });
+            CameraUpdate.newLatLngBounds(boundsIn, padding: paddingIn),
+            duration: duration,
+            onFinished: (bool success) {
+              expect(success, true);
+            },
+          );
 
-          result = verify(viewMockApi.animateCameraToLatLngBounds(
-              captureAny, captureAny, captureAny, captureAny));
+          result = verify(
+            viewMockApi.animateCameraToLatLngBounds(
+              captureAny,
+              captureAny,
+              captureAny,
+              captureAny,
+            ),
+          );
           final LatLngBoundsDto boundsOut =
               result.captured[1] as LatLngBoundsDto;
 
@@ -253,18 +300,27 @@ void main() {
 
           // Animate camera to co-ordinates and zoom
 
-          when(viewMockApi.animateCameraToLatLngZoom(any, any, any, any))
-              .thenAnswer((Invocation _) async => true);
+          when(
+            viewMockApi.animateCameraToLatLngZoom(any, any, any, any),
+          ).thenAnswer((Invocation _) async => true);
 
           const double zoomIn = 4.0;
           await controller.animateCamera(
-              CameraUpdate.newLatLngZoom(latLngIn, zoomIn),
-              duration: duration, onFinished: (bool success) {
-            expect(success, true);
-          });
+            CameraUpdate.newLatLngZoom(latLngIn, zoomIn),
+            duration: duration,
+            onFinished: (bool success) {
+              expect(success, true);
+            },
+          );
 
-          result = verify(viewMockApi.animateCameraToLatLngZoom(
-              captureAny, captureAny, captureAny, captureAny));
+          result = verify(
+            viewMockApi.animateCameraToLatLngZoom(
+              captureAny,
+              captureAny,
+              captureAny,
+              captureAny,
+            ),
+          );
           final LatLngDto latLngOut2 = result.captured[1] as LatLngDto;
 
           expect(viewId, result.captured[0] as int);
@@ -275,19 +331,28 @@ void main() {
 
           // Animate camera by scrolling
 
-          when(viewMockApi.animateCameraByScroll(any, any, any, any))
-              .thenAnswer((Invocation _) async => true);
+          when(
+            viewMockApi.animateCameraByScroll(any, any, any, any),
+          ).thenAnswer((Invocation _) async => true);
 
           const double scrollByDx = 4.0;
           const double scrollByDy = 5.0;
           await controller.animateCamera(
-              CameraUpdate.scrollBy(scrollByDx, scrollByDy),
-              duration: duration, onFinished: (bool success) {
-            expect(success, true);
-          });
+            CameraUpdate.scrollBy(scrollByDx, scrollByDy),
+            duration: duration,
+            onFinished: (bool success) {
+              expect(success, true);
+            },
+          );
 
-          result = verify(viewMockApi.animateCameraByScroll(
-              captureAny, captureAny, captureAny, captureAny));
+          result = verify(
+            viewMockApi.animateCameraByScroll(
+              captureAny,
+              captureAny,
+              captureAny,
+              captureAny,
+            ),
+          );
 
           expect(viewId, result.captured[0] as int);
           expect(scrollByDx, result.captured[1] as double);
@@ -296,19 +361,29 @@ void main() {
 
           // Animate camera by zoom
 
-          when(viewMockApi.animateCameraByZoom(any, any, any, any, any))
-              .thenAnswer((Invocation _) async => true);
+          when(
+            viewMockApi.animateCameraByZoom(any, any, any, any, any),
+          ).thenAnswer((Invocation _) async => true);
 
           const double zoomBy = 2.0;
           const Offset focusIn = Offset(3.0, 4.0);
           await controller.animateCamera(
-              CameraUpdate.zoomBy(zoomBy, focus: focusIn),
-              duration: duration, onFinished: (bool success) {
-            expect(success, true);
-          });
+            CameraUpdate.zoomBy(zoomBy, focus: focusIn),
+            duration: duration,
+            onFinished: (bool success) {
+              expect(success, true);
+            },
+          );
 
-          result = verify(viewMockApi.animateCameraByZoom(
-              captureAny, captureAny, captureAny, captureAny, captureAny));
+          result = verify(
+            viewMockApi.animateCameraByZoom(
+              captureAny,
+              captureAny,
+              captureAny,
+              captureAny,
+              captureAny,
+            ),
+          );
 
           expect(viewId, result.captured[0] as int);
           expect(zoomBy, result.captured[1] as double);
@@ -319,13 +394,23 @@ void main() {
           // Animate camera by zooming in
 
           // Calls the same viewMockApi.animateCameraByZoom() that has already been mocked
-          await controller.animateCamera(CameraUpdate.zoomIn(),
-              duration: duration, onFinished: (bool success) {
-            expect(success, true);
-          });
+          await controller.animateCamera(
+            CameraUpdate.zoomIn(),
+            duration: duration,
+            onFinished: (bool success) {
+              expect(success, true);
+            },
+          );
 
-          result = verify(viewMockApi.animateCameraByZoom(
-              captureAny, captureAny, captureAny, captureAny, captureAny));
+          result = verify(
+            viewMockApi.animateCameraByZoom(
+              captureAny,
+              captureAny,
+              captureAny,
+              captureAny,
+              captureAny,
+            ),
+          );
 
           expect(viewId, result.captured[0] as int);
           expect(1.0 /* zoom by 1.0 */, result.captured[1] as double);
@@ -335,13 +420,23 @@ void main() {
 
           // Animate camera by zooming out
 
-          await controller.animateCamera(CameraUpdate.zoomOut(),
-              duration: duration, onFinished: (bool success) {
-            expect(success, true);
-          });
+          await controller.animateCamera(
+            CameraUpdate.zoomOut(),
+            duration: duration,
+            onFinished: (bool success) {
+              expect(success, true);
+            },
+          );
 
-          result = verify(viewMockApi.animateCameraByZoom(
-              captureAny, captureAny, captureAny, captureAny, captureAny));
+          result = verify(
+            viewMockApi.animateCameraByZoom(
+              captureAny,
+              captureAny,
+              captureAny,
+              captureAny,
+              captureAny,
+            ),
+          );
 
           expect(viewId, result.captured[0] as int);
           expect(-1.0, result.captured[1] as double);
@@ -351,16 +446,21 @@ void main() {
 
           // Animate camera by a fixed zoom value
 
-          when(viewMockApi.animateCameraToZoom(any, any, any))
-              .thenAnswer((Invocation _) async => true);
+          when(
+            viewMockApi.animateCameraToZoom(any, any, any),
+          ).thenAnswer((Invocation _) async => true);
 
-          await controller.animateCamera(CameraUpdate.zoomTo(zoomIn),
-              duration: duration, onFinished: (bool success) {
-            expect(success, true);
-          });
+          await controller.animateCamera(
+            CameraUpdate.zoomTo(zoomIn),
+            duration: duration,
+            onFinished: (bool success) {
+              expect(success, true);
+            },
+          );
 
-          result = verify(viewMockApi.animateCameraToZoom(
-              captureAny, captureAny, captureAny));
+          result = verify(
+            viewMockApi.animateCameraToZoom(captureAny, captureAny, captureAny),
+          );
           expect(viewId, result.captured[0] as int);
           expect(zoomIn, result.captured[1] as double);
           expect(durationMsec, result.captured[2] as int);
@@ -373,20 +473,29 @@ void main() {
 
           final LatLngDto targetIn = LatLngDto(latitude: 5.0, longitude: 6.0);
           final CameraPositionDto positionIn = CameraPositionDto(
-              bearing: 20, target: targetIn, tilt: 30, zoom: 2.0);
+            bearing: 20,
+            target: targetIn,
+            tilt: 30,
+            zoom: 2.0,
+          );
           when(viewMockApi.getCameraPosition(any)).thenReturn(positionIn);
 
           // Move camera to camera position
 
           const LatLng latLngIn = LatLng(latitude: 5.0, longitude: 6.0);
 
-          const CameraPosition positionIn2 =
-              CameraPosition(bearing: 20, target: latLngIn, tilt: 30);
-          await controller
-              .moveCamera(CameraUpdate.newCameraPosition(positionIn2));
+          const CameraPosition positionIn2 = CameraPosition(
+            bearing: 20,
+            target: latLngIn,
+            tilt: 30,
+          );
+          await controller.moveCamera(
+            CameraUpdate.newCameraPosition(positionIn2),
+          );
 
           VerificationResult result = verify(
-              viewMockApi.moveCameraToCameraPosition(captureAny, captureAny));
+            viewMockApi.moveCameraToCameraPosition(captureAny, captureAny),
+          );
           final CameraPositionDto positionOut2 =
               result.captured[1] as CameraPositionDto;
 
@@ -401,8 +510,9 @@ void main() {
 
           await controller.moveCamera(CameraUpdate.newLatLng(latLngIn));
 
-          result =
-              verify(viewMockApi.moveCameraToLatLng(captureAny, captureAny));
+          result = verify(
+            viewMockApi.moveCameraToLatLng(captureAny, captureAny),
+          );
           final LatLngDto latLngOut = result.captured[1] as LatLngDto;
 
           expect(viewId, result.captured[0] as int);
@@ -413,14 +523,22 @@ void main() {
 
           const LatLng latLngIn2 = LatLng(latitude: 7.0, longitude: 9.0);
 
-          final LatLngBounds boundsIn =
-              LatLngBounds(southwest: latLngIn, northeast: latLngIn2);
+          final LatLngBounds boundsIn = LatLngBounds(
+            southwest: latLngIn,
+            northeast: latLngIn2,
+          );
           const double paddingIn = 2.0;
           await controller.moveCamera(
-              CameraUpdate.newLatLngBounds(boundsIn, padding: paddingIn));
+            CameraUpdate.newLatLngBounds(boundsIn, padding: paddingIn),
+          );
 
-          result = verify(viewMockApi.moveCameraToLatLngBounds(
-              captureAny, captureAny, captureAny));
+          result = verify(
+            viewMockApi.moveCameraToLatLngBounds(
+              captureAny,
+              captureAny,
+              captureAny,
+            ),
+          );
           final LatLngBoundsDto boundsOut =
               result.captured[1] as LatLngBoundsDto;
 
@@ -434,11 +552,17 @@ void main() {
           // Move camera to co-ordinates and zoom
 
           const double zoomIn = 4.0;
-          await controller
-              .moveCamera(CameraUpdate.newLatLngZoom(latLngIn, zoomIn));
+          await controller.moveCamera(
+            CameraUpdate.newLatLngZoom(latLngIn, zoomIn),
+          );
 
-          result = verify(viewMockApi.moveCameraToLatLngZoom(
-              captureAny, captureAny, captureAny));
+          result = verify(
+            viewMockApi.moveCameraToLatLngZoom(
+              captureAny,
+              captureAny,
+              captureAny,
+            ),
+          );
           final LatLngDto latLngOut2 = result.captured[1] as LatLngDto;
 
           expect(viewId, result.captured[0] as int);
@@ -450,11 +574,13 @@ void main() {
 
           const double scrollByDx = 4.0;
           const double scrollByDy = 5.0;
-          await controller
-              .moveCamera(CameraUpdate.scrollBy(scrollByDx, scrollByDy));
+          await controller.moveCamera(
+            CameraUpdate.scrollBy(scrollByDx, scrollByDy),
+          );
 
-          result = verify(viewMockApi.moveCameraByScroll(
-              captureAny, captureAny, captureAny));
+          result = verify(
+            viewMockApi.moveCameraByScroll(captureAny, captureAny, captureAny),
+          );
 
           expect(viewId, result.captured[0] as int);
           expect(scrollByDx, result.captured[1] as double);
@@ -464,11 +590,18 @@ void main() {
 
           const double zoomBy = 2.0;
           const Offset focusIn = Offset(3.0, 4.0);
-          await controller
-              .moveCamera(CameraUpdate.zoomBy(zoomBy, focus: focusIn));
+          await controller.moveCamera(
+            CameraUpdate.zoomBy(zoomBy, focus: focusIn),
+          );
 
-          result = verify(viewMockApi.moveCameraByZoom(
-              captureAny, captureAny, captureAny, captureAny));
+          result = verify(
+            viewMockApi.moveCameraByZoom(
+              captureAny,
+              captureAny,
+              captureAny,
+              captureAny,
+            ),
+          );
 
           expect(viewId, result.captured[0] as int);
           expect(zoomBy, result.captured[1] as double);
@@ -479,8 +612,14 @@ void main() {
 
           await controller.moveCamera(CameraUpdate.zoomIn());
 
-          result = verify(viewMockApi.moveCameraByZoom(
-              captureAny, captureAny, captureAny, captureAny));
+          result = verify(
+            viewMockApi.moveCameraByZoom(
+              captureAny,
+              captureAny,
+              captureAny,
+              captureAny,
+            ),
+          );
 
           expect(viewId, result.captured[0] as int);
           expect(1.0 /* zoom by 1.0 */, result.captured[1] as double);
@@ -491,8 +630,14 @@ void main() {
 
           await controller.moveCamera(CameraUpdate.zoomOut());
 
-          result = verify(viewMockApi.moveCameraByZoom(
-              captureAny, captureAny, captureAny, captureAny));
+          result = verify(
+            viewMockApi.moveCameraByZoom(
+              captureAny,
+              captureAny,
+              captureAny,
+              captureAny,
+            ),
+          );
 
           expect(viewId, result.captured[0] as int);
           expect(-1.0, result.captured[1] as double);
@@ -521,10 +666,19 @@ void main() {
           when(viewMockApi.isCompassEnabled(any)).thenReturn(true);
           when(viewMockApi.isRotateGesturesEnabled(any)).thenReturn(true);
           when(viewMockApi.isScrollGesturesEnabled(any)).thenReturn(true);
-          when(viewMockApi.isScrollGesturesEnabledDuringRotateOrZoom(any))
-              .thenReturn(true);
+          when(
+            viewMockApi.isScrollGesturesEnabledDuringRotateOrZoom(any),
+          ).thenReturn(true);
           when(viewMockApi.isTiltGesturesEnabled(any)).thenReturn(true);
           when(viewMockApi.isMapToolbarEnabled(any)).thenReturn(true);
+          when(viewMockApi.isTrafficPromptsEnabled(any)).thenReturn(true);
+          when(viewMockApi.isReportIncidentButtonEnabled(any)).thenReturn(true);
+          when(viewMockApi.isNavigationHeaderEnabled(any)).thenReturn(true);
+          when(viewMockApi.isNavigationFooterEnabled(any)).thenReturn(true);
+          when(viewMockApi.isSpeedLimitIconEnabled(any)).thenReturn(true);
+          when(viewMockApi.isSpeedometerEnabled(any)).thenReturn(true);
+          when(viewMockApi.isTrafficIncidentCardsEnabled(any)).thenReturn(true);
+          when(viewMockApi.isNavigationUIEnabled(any)).thenReturn(true);
 
           // Test UI element visibility getter return values.
           expect(await controller.isMyLocationEnabled(), true);
@@ -535,11 +689,20 @@ void main() {
           expect(await controller.settings.isRotateGesturesEnabled(), true);
           expect(await controller.settings.isScrollGesturesEnabled(), true);
           expect(
-              await controller.settings
-                  .isScrollGesturesEnabledDuringRotateOrZoom(),
-              true);
+            await controller.settings
+                .isScrollGesturesEnabledDuringRotateOrZoom(),
+            true,
+          );
           expect(await controller.settings.isTiltGesturesEnabled(), true);
           expect(await controller.settings.isMapToolbarEnabled(), true);
+          expect(await controller.isTrafficPromptsEnabled(), true);
+          expect(await controller.isReportIncidentButtonEnabled(), true);
+          expect(await controller.isNavigationHeaderEnabled(), true);
+          expect(await controller.isNavigationFooterEnabled(), true);
+          expect(await controller.isSpeedLimitIconEnabled(), true);
+          expect(await controller.isSpeedometerEnabled(), true);
+          expect(await controller.isTrafficIncidentCardsEnabled(), true);
+          expect(await controller.isNavigationUIEnabled(), true);
 
           // Verify calls went through to the platform side.
           verify(viewMockApi.isMyLocationEnabled(captureAny));
@@ -549,10 +712,19 @@ void main() {
           verify(viewMockApi.isCompassEnabled(captureAny));
           verify(viewMockApi.isRotateGesturesEnabled(captureAny));
           verify(viewMockApi.isScrollGesturesEnabled(captureAny));
-          verify(viewMockApi
-              .isScrollGesturesEnabledDuringRotateOrZoom(captureAny));
+          verify(
+            viewMockApi.isScrollGesturesEnabledDuringRotateOrZoom(captureAny),
+          );
           verify(viewMockApi.isTiltGesturesEnabled(captureAny));
           verify(viewMockApi.isMapToolbarEnabled(captureAny));
+          verify(viewMockApi.isTrafficPromptsEnabled(captureAny));
+          verify(viewMockApi.isReportIncidentButtonEnabled(captureAny));
+          verify(viewMockApi.isNavigationHeaderEnabled(captureAny));
+          verify(viewMockApi.isNavigationFooterEnabled(captureAny));
+          verify(viewMockApi.isSpeedLimitIconEnabled(captureAny));
+          verify(viewMockApi.isSpeedometerEnabled(captureAny));
+          verify(viewMockApi.isTrafficIncidentCardsEnabled(captureAny));
+          verify(viewMockApi.isNavigationUIEnabled(captureAny));
 
           // Call UI element visibility setters.
           await controller.setMyLocationEnabled(true);
@@ -562,67 +734,148 @@ void main() {
           await controller.settings.setCompassEnabled(true);
           await controller.settings.setRotateGesturesEnabled(true);
           await controller.settings.setScrollGesturesEnabled(true);
-          await controller.settings
-              .setScrollGesturesDuringRotateOrZoomEnabled(true);
+          await controller.settings.setScrollGesturesDuringRotateOrZoomEnabled(
+            true,
+          );
           await controller.settings.setTiltGesturesEnabled(true);
           await controller.settings.setMapToolbarEnabled(true);
+          await controller.setTrafficPromptsEnabled(true);
+          await controller.setReportIncidentButtonEnabled(true);
+          await controller.setNavigationHeaderEnabled(true);
+          await controller.setNavigationFooterEnabled(true);
+          await controller.setSpeedLimitIconEnabled(true);
+          await controller.setSpeedometerEnabled(true);
+          await controller.setTrafficIncidentCardsEnabled(true);
+          await controller.setNavigationUIEnabled(true);
 
-          // Verify getters went through with the right parameters.
+          // Verify setters went through with the right parameters.
           verifyEnabled(
-              verify(viewMockApi.setMyLocationEnabled(captureAny, captureAny)),
-              true);
+            verify(viewMockApi.setMyLocationEnabled(captureAny, captureAny)),
+            true,
+          );
           verifyEnabled(
-              verify(viewMockApi.setMyLocationButtonEnabled(
-                  captureAny, captureAny)),
-              true);
+            verify(
+              viewMockApi.setMyLocationButtonEnabled(captureAny, captureAny),
+            ),
+            true,
+          );
           verifyEnabled(
-              verify(
-                  viewMockApi.setZoomGesturesEnabled(captureAny, captureAny)),
-              true);
+            verify(viewMockApi.setZoomGesturesEnabled(captureAny, captureAny)),
+            true,
+          );
           verifyEnabled(
-              verify(
-                  viewMockApi.setZoomControlsEnabled(captureAny, captureAny)),
-              true);
+            verify(viewMockApi.setZoomControlsEnabled(captureAny, captureAny)),
+            true,
+          );
           verifyEnabled(
-              verify(viewMockApi.setCompassEnabled(captureAny, captureAny)),
-              true);
+            verify(viewMockApi.setCompassEnabled(captureAny, captureAny)),
+            true,
+          );
           verifyEnabled(
-              verify(
-                  viewMockApi.setRotateGesturesEnabled(captureAny, captureAny)),
-              true);
+            verify(
+              viewMockApi.setRotateGesturesEnabled(captureAny, captureAny),
+            ),
+            true,
+          );
           verifyEnabled(
-              verify(
-                  viewMockApi.setScrollGesturesEnabled(captureAny, captureAny)),
-              true);
+            verify(
+              viewMockApi.setScrollGesturesEnabled(captureAny, captureAny),
+            ),
+            true,
+          );
           verifyEnabled(
-              verify(viewMockApi.setScrollGesturesDuringRotateOrZoomEnabled(
-                  captureAny, captureAny)),
-              true);
+            verify(
+              viewMockApi.setScrollGesturesDuringRotateOrZoomEnabled(
+                captureAny,
+                captureAny,
+              ),
+            ),
+            true,
+          );
           verifyEnabled(
-              verify(
-                  viewMockApi.setTiltGesturesEnabled(captureAny, captureAny)),
-              true);
+            verify(viewMockApi.setTiltGesturesEnabled(captureAny, captureAny)),
+            true,
+          );
           verifyEnabled(
-              verify(viewMockApi.setMapToolbarEnabled(captureAny, captureAny)),
-              true);
+            verify(viewMockApi.setMapToolbarEnabled(captureAny, captureAny)),
+            true,
+          );
+          verifyEnabled(
+            verify(
+              viewMockApi.setTrafficPromptsEnabled(captureAny, captureAny),
+            ),
+            true,
+          );
+          verifyEnabled(
+            verify(
+              viewMockApi.setReportIncidentButtonEnabled(
+                captureAny,
+                captureAny,
+              ),
+            ),
+            true,
+          );
+          verifyEnabled(
+            verify(
+              viewMockApi.setNavigationHeaderEnabled(captureAny, captureAny),
+            ),
+            true,
+          );
+          verifyEnabled(
+            verify(
+              viewMockApi.setNavigationFooterEnabled(captureAny, captureAny),
+            ),
+            true,
+          );
+          verifyEnabled(
+            verify(
+              viewMockApi.setSpeedLimitIconEnabled(captureAny, captureAny),
+            ),
+            true,
+          );
+          verifyEnabled(
+            verify(viewMockApi.setSpeedometerEnabled(captureAny, captureAny)),
+            true,
+          );
+          verifyEnabled(
+            verify(
+              viewMockApi.setTrafficIncidentCardsEnabled(
+                captureAny,
+                captureAny,
+              ),
+            ),
+            true,
+          );
+          verifyEnabled(
+            verify(viewMockApi.setNavigationUIEnabled(captureAny, captureAny)),
+            true,
+          );
         });
 
         test('set padding for map', () async {
           // Create padding
-          EdgeInsets insets =
-              const EdgeInsets.only(left: 5, right: 10, top: 15, bottom: 20);
+          EdgeInsets insets = const EdgeInsets.only(
+            left: 5,
+            right: 10,
+            top: 15,
+            bottom: 20,
+          );
 
           // Mock api response
-          when(viewMockApi.setPadding(any, any))
-              .thenAnswer((Invocation _) async => ());
+          when(
+            viewMockApi.setPadding(any, any),
+          ).thenAnswer((Invocation _) async => ());
 
           // Set padding
-          await GoogleMapsNavigationPlatform.instance.viewAPI
-              .setPadding(viewId: 0, padding: insets);
+          await GoogleMapsNavigationPlatform.instance.viewAPI.setPadding(
+            viewId: 0,
+            padding: insets,
+          );
 
           // Verify correct message sent from view api
-          final VerificationResult result =
-              verify(viewMockApi.setPadding(captureAny, captureAny));
+          final VerificationResult result = verify(
+            viewMockApi.setPadding(captureAny, captureAny),
+          );
           final MapPaddingDto paddingMessage =
               result.captured[1] as MapPaddingDto;
 
@@ -635,23 +888,34 @@ void main() {
 
         test('get padding from map', () async {
           // Create padding
-          EdgeInsets insets =
-              const EdgeInsets.only(top: 5, left: 10, bottom: 15, right: 20);
+          EdgeInsets insets = const EdgeInsets.only(
+            top: 5,
+            left: 10,
+            bottom: 15,
+            right: 20,
+          );
 
           // Mock api response
-          final MapPaddingDto messagePadding =
-              MapPaddingDto(top: 5, left: 10, bottom: 15, right: 20);
-          when(viewMockApi.getPadding(any))
-              .thenAnswer((Invocation _) => messagePadding);
+          final MapPaddingDto messagePadding = MapPaddingDto(
+            top: 5,
+            left: 10,
+            bottom: 15,
+            right: 20,
+          );
+          when(
+            viewMockApi.getPadding(any),
+          ).thenAnswer((Invocation _) => messagePadding);
 
           // Get padding
           final EdgeInsets paddingOut = await GoogleMapsNavigationPlatform
-              .instance.viewAPI
+              .instance
+              .viewAPI
               .getPadding(viewId: 0);
 
           // Verify correct message sent from view api
-          final VerificationResult result =
-              verify(viewMockApi.getPadding(captureAny));
+          final VerificationResult result = verify(
+            viewMockApi.getPadding(captureAny),
+          );
           final int viewId = result.captured[0] as int;
 
           // Verify response padding
@@ -666,17 +930,24 @@ void main() {
           const String title = 'Title';
           const String companyName = 'Temp co.';
           const bool showDriverAwareness = true;
-          when(sessionMockApi.showTermsAndConditionsDialog(any, any, any))
-              .thenAnswer((Invocation _) async => true);
+          when(
+            sessionMockApi.showTermsAndConditionsDialog(any, any, any),
+          ).thenAnswer((Invocation _) async => true);
           final bool accepted =
               await GoogleMapsNavigator.showTermsAndConditionsDialog(
-                  title, companyName,
-                  shouldOnlyShowDriverAwarenessDisclaimer: showDriverAwareness);
+                title,
+                companyName,
+                shouldOnlyShowDriverAwarenessDisclaimer: showDriverAwareness,
+              );
           expect(accepted, true);
 
           final VerificationResult result = verify(
-              sessionMockApi.showTermsAndConditionsDialog(
-                  captureAny, captureAny, captureAny));
+            sessionMockApi.showTermsAndConditionsDialog(
+              captureAny,
+              captureAny,
+              captureAny,
+            ),
+          );
           expect(result.captured[0] as String, title);
           expect(result.captured[1] as String, companyName);
           expect(result.captured[2] as bool, showDriverAwareness);
@@ -694,9 +965,11 @@ void main() {
         test('Test navigation session', () async {
           // Initialize session and session controller.
           await GoogleMapsNavigator.initializeNavigationSession(
-              abnormalTerminationReportingEnabled: false);
+            abnormalTerminationReportingEnabled: false,
+          );
           VerificationResult result = verify(
-              sessionMockApi.createNavigationSession(captureAny, captureAny));
+            sessionMockApi.createNavigationSession(captureAny, captureAny),
+          );
           expect(result.captured[0] as bool, false);
 
           // Start/stop guidance.
@@ -711,45 +984,58 @@ void main() {
           if (platform is GoogleMapsNavigationIOS) {
             await GoogleMapsNavigator.allowBackgroundLocationUpdates(true);
             final VerificationResult backgroundResult = verify(
-                sessionMockApi.allowBackgroundLocationUpdates(captureAny));
+              sessionMockApi.allowBackgroundLocationUpdates(captureAny),
+            );
             expect(backgroundResult.captured[0] as bool, true);
           } else if (platform is GoogleMapsNavigationAndroid) {
             expect(
-                () => GoogleMapsNavigator.allowBackgroundLocationUpdates(true),
-                throwsUnsupportedError);
+              () => GoogleMapsNavigator.allowBackgroundLocationUpdates(true),
+              throwsUnsupportedError,
+            );
           }
 
           // Continue to the next destination.
-          final NavigationWaypointDto waypointIn = NavigationWaypointDto(
-              title: 'Title',
-              target: LatLngDto(latitude: 0.4, longitude: 0.5),
-              placeID: 'id',
-              preferSameSideOfRoad: true,
-              preferredSegmentHeading: 50);
+          final NavigationWaypointDto targetWaypointIn = NavigationWaypointDto(
+            title: 'Title',
+            target: LatLngDto(latitude: 0.4, longitude: 0.5),
+            preferSameSideOfRoad: true,
+            preferredSegmentHeading: 50,
+          );
 
-          when(sessionMockApi.continueToNextDestination())
-              .thenReturn(waypointIn);
+          when(
+            sessionMockApi.continueToNextDestination(),
+          ).thenReturn(targetWaypointIn);
           final NavigationWaypoint? waypointOut =
               await GoogleMapsNavigator.continueToNextDestination();
           expect(waypointOut, isNotNull);
           if (waypointOut != null) {
-            expect(waypointIn.title, waypointOut.title);
-            expect(waypointIn.target?.latitude, waypointOut.target?.latitude);
-            expect(waypointIn.target?.longitude, waypointOut.target?.longitude);
-            expect(waypointIn.placeID, waypointOut.placeID);
-            expect(waypointIn.preferSameSideOfRoad,
-                waypointOut.preferSameSideOfRoad);
-            expect(waypointIn.preferredSegmentHeading,
-                waypointOut.preferredSegmentHeading);
+            expect(targetWaypointIn.title, waypointOut.title);
+            expect(
+              targetWaypointIn.target?.latitude,
+              waypointOut.target?.latitude,
+            );
+            expect(
+              targetWaypointIn.target?.longitude,
+              waypointOut.target?.longitude,
+            );
+            expect(
+              targetWaypointIn.preferSameSideOfRoad,
+              waypointOut.preferSameSideOfRoad,
+            );
+            expect(
+              targetWaypointIn.preferredSegmentHeading,
+              waypointOut.preferredSegmentHeading,
+            );
           }
 
           // Set destinations.
 
           final NavigationDisplayOptions navigationDisplayOptionsIn =
               NavigationDisplayOptions(
-                  showDestinationMarkers: false,
-                  showStopSigns: true,
-                  showTrafficLights: true);
+                showDestinationMarkers: false,
+                showStopSigns: true,
+                showTrafficLights: true,
+              );
 
           final RoutingOptions routingOptionsIn = RoutingOptions(
             alternateRoutesStrategy: NavigationAlternateRoutesStrategy.all,
@@ -763,17 +1049,19 @@ void main() {
 
           final NavigationWaypoint destinationWaypointIn =
               NavigationWaypoint.withLatLngTarget(
-            title: 'title',
-            target: const LatLng(latitude: 5.0, longitude: 6.0),
-          );
+                title: 'title',
+                target: const LatLng(latitude: 5.0, longitude: 6.0),
+              );
           final Destinations destinationIn = Destinations(
-              waypoints: <NavigationWaypoint>[destinationWaypointIn],
-              displayOptions: navigationDisplayOptionsIn,
-              routingOptions: routingOptionsIn);
+            waypoints: <NavigationWaypoint>[destinationWaypointIn],
+            displayOptions: navigationDisplayOptionsIn,
+            routingOptions: routingOptionsIn,
+          );
 
           const RouteStatusDto statusIn = RouteStatusDto.quotaExceeded;
-          when(sessionMockApi.setDestinations(any))
-              .thenAnswer((Invocation _) async => statusIn);
+          when(
+            sessionMockApi.setDestinations(any),
+          ).thenAnswer((Invocation _) async => statusIn);
 
           final NavigationRouteStatus statusOut =
               await GoogleMapsNavigator.setDestinations(destinationIn);
@@ -786,36 +1074,59 @@ void main() {
           expect(destinationWaypointOut, isNotNull);
           if (destinationWaypointOut != null) {
             expect(destinationWaypointIn.title, destinationWaypointOut.title);
-            expect(destinationWaypointIn.target?.latitude,
-                destinationWaypointOut.target?.latitude);
-            expect(destinationWaypointIn.target?.longitude,
-                destinationWaypointOut.target?.longitude);
+            expect(
+              destinationWaypointIn.target?.latitude,
+              destinationWaypointOut.target?.latitude,
+            );
+            expect(
+              destinationWaypointIn.target?.longitude,
+              destinationWaypointOut.target?.longitude,
+            );
           }
-          expect(destinationIn.displayOptions.showDestinationMarkers,
-              destinationOut.displayOptions.showDestinationMarkers);
-          expect(destinationIn.displayOptions.showStopSigns,
-              destinationOut.displayOptions.showStopSigns);
-          expect(destinationIn.displayOptions.showTrafficLights,
-              destinationOut.displayOptions.showTrafficLights);
+          expect(
+            destinationIn.displayOptions.showDestinationMarkers,
+            destinationOut.displayOptions.showDestinationMarkers,
+          );
+          expect(
+            destinationIn.displayOptions.showStopSigns,
+            destinationOut.displayOptions.showStopSigns,
+          );
+          expect(
+            destinationIn.displayOptions.showTrafficLights,
+            destinationOut.displayOptions.showTrafficLights,
+          );
 
-          expect(AlternateRoutesStrategyDto.all,
-              destinationOut.routingOptions!.alternateRoutesStrategy);
-          expect(RoutingStrategyDto.defaultBest,
-              destinationOut.routingOptions!.routingStrategy);
-          expect(destinationIn.routingOptions!.avoidFerries,
-              destinationOut.routingOptions!.avoidFerries);
-          expect(destinationIn.routingOptions!.avoidHighways,
-              destinationOut.routingOptions!.avoidHighways);
-          expect(destinationIn.routingOptions!.avoidTolls,
-              destinationOut.routingOptions!.avoidTolls);
-          expect(destinationIn.routingOptions!.locationTimeoutMs,
-              destinationOut.routingOptions!.locationTimeoutMs);
+          expect(
+            AlternateRoutesStrategyDto.all,
+            destinationOut.routingOptions!.alternateRoutesStrategy,
+          );
+          expect(
+            RoutingStrategyDto.defaultBest,
+            destinationOut.routingOptions!.routingStrategy,
+          );
+          expect(
+            destinationIn.routingOptions!.avoidFerries,
+            destinationOut.routingOptions!.avoidFerries,
+          );
+          expect(
+            destinationIn.routingOptions!.avoidHighways,
+            destinationOut.routingOptions!.avoidHighways,
+          );
+          expect(
+            destinationIn.routingOptions!.avoidTolls,
+            destinationOut.routingOptions!.avoidTolls,
+          );
+          expect(
+            destinationIn.routingOptions!.locationTimeoutMs,
+            destinationOut.routingOptions!.locationTimeoutMs,
+          );
 
           // Get current time and distance.
           final NavigationTimeAndDistanceDto timeAndDistanceIn =
               NavigationTimeAndDistanceDto(time: 5.0, distance: 6.0);
-          when(sessionMockApi.getCurrentTimeAndDistance())
-              .thenReturn(timeAndDistanceIn);
+          when(
+            sessionMockApi.getCurrentTimeAndDistance(),
+          ).thenReturn(timeAndDistanceIn);
           final NavigationTimeAndDistance timeAndDistanceOut =
               await GoogleMapsNavigator.getCurrentTimeAndDistance();
           expect(timeAndDistanceIn.time, timeAndDistanceOut.time);
@@ -823,18 +1134,22 @@ void main() {
 
           final NavigationAudioGuidanceSettings settingsIn =
               NavigationAudioGuidanceSettings(
-                  isBluetoothAudioEnabled: true,
-                  isVibrationEnabled: true,
-                  guidanceType: NavigationAudioGuidanceType.alertsOnly);
+                isBluetoothAudioEnabled: true,
+                isVibrationEnabled: true,
+                guidanceType: NavigationAudioGuidanceType.alertsOnly,
+              );
 
           // Set audio guidance.
           await GoogleMapsNavigator.setAudioGuidance(settingsIn);
-          final VerificationResult settingsResult =
-              verify(sessionMockApi.setAudioGuidance(captureAny));
+          final VerificationResult settingsResult = verify(
+            sessionMockApi.setAudioGuidance(captureAny),
+          );
           final NavigationAudioGuidanceSettingsDto settingsOut =
               settingsResult.captured[0] as NavigationAudioGuidanceSettingsDto;
-          expect(settingsIn.isBluetoothAudioEnabled,
-              settingsOut.isBluetoothAudioEnabled);
+          expect(
+            settingsIn.isBluetoothAudioEnabled,
+            settingsOut.isBluetoothAudioEnabled,
+          );
           expect(settingsIn.isVibrationEnabled, settingsOut.isVibrationEnabled);
           expect(settingsOut.guidanceType, AudioGuidanceTypeDto.alertsOnly);
         });
@@ -852,8 +1167,9 @@ void main() {
 
           const LatLng pointIn = LatLng(latitude: 0.4, longitude: 0.5);
           await GoogleMapsNavigator.simulator.setUserLocation(pointIn);
-          final VerificationResult result =
-              verify(sessionMockApi.setUserLocation(captureAny));
+          final VerificationResult result = verify(
+            sessionMockApi.setUserLocation(captureAny),
+          );
           final LatLngDto pointOut = result.captured[0] as LatLngDto;
           expect(pointIn.latitude, pointOut.latitude);
           expect(pointIn.longitude, pointOut.longitude);
@@ -871,12 +1187,16 @@ void main() {
               .simulateLocationsAlongExistingRoute();
           verify(sessionMockApi.simulateLocationsAlongExistingRoute());
 
-          final SimulationOptions simOptionsIn =
-              SimulationOptions(speedMultiplier: 5.5);
+          final SimulationOptions simOptionsIn = SimulationOptions(
+            speedMultiplier: 5.5,
+          );
           await GoogleMapsNavigator.simulator
               .simulateLocationsAlongExistingRouteWithOptions(simOptionsIn);
-          final VerificationResult optionsResult = verify(sessionMockApi
-              .simulateLocationsAlongExistingRouteWithOptions(captureAny));
+          final VerificationResult optionsResult = verify(
+            sessionMockApi.simulateLocationsAlongExistingRouteWithOptions(
+              captureAny,
+            ),
+          );
           final SimulationOptionsDto optionsOut =
               optionsResult.captured[0] as SimulationOptionsDto;
           expect(simOptionsIn.speedMultiplier, optionsOut.speedMultiplier);
@@ -885,20 +1205,22 @@ void main() {
 
           final NavigationWaypoint waypointIn =
               NavigationWaypoint.withLatLngTarget(
-            title: 'title',
-            target: const LatLng(latitude: 5.0, longitude: 6.0),
-          );
+                title: 'title',
+                target: const LatLng(latitude: 5.0, longitude: 6.0),
+              );
 
-          when(sessionMockApi.simulateLocationsAlongNewRoute(any))
-              .thenAnswer((Invocation _) async => RouteStatusDto.statusOk);
+          when(
+            sessionMockApi.simulateLocationsAlongNewRoute(any),
+          ).thenAnswer((Invocation _) async => RouteStatusDto.statusOk);
 
           final NavigationRouteStatus statusOut = await GoogleMapsNavigator
               .simulator
               .simulateLocationsAlongNewRoute(<NavigationWaypoint>[waypointIn]);
           expect(statusOut, NavigationRouteStatus.statusOk);
 
-          final VerificationResult routeResult =
-              verify(sessionMockApi.simulateLocationsAlongNewRoute(captureAny));
+          final VerificationResult routeResult = verify(
+            sessionMockApi.simulateLocationsAlongNewRoute(captureAny),
+          );
           final List<NavigationWaypointDto?> waypoints =
               routeResult.captured[0] as List<NavigationWaypointDto?>;
           final NavigationWaypointDto? waypointOut = waypoints[0];
@@ -909,29 +1231,37 @@ void main() {
           // Simulate the locations along a new route with routing options.
 
           final RoutingOptions routingOptionsIn = RoutingOptions(
-              alternateRoutesStrategy: NavigationAlternateRoutesStrategy.none,
-              routingStrategy: NavigationRoutingStrategy.deltaToTargetDistance,
-              targetDistanceMeters: <int?>[1, 1, 1],
-              travelMode: NavigationTravelMode.taxi,
-              avoidTolls: true,
-              avoidFerries: true,
-              avoidHighways: true,
-              locationTimeoutMs: 10000);
+            alternateRoutesStrategy: NavigationAlternateRoutesStrategy.none,
+            routingStrategy: NavigationRoutingStrategy.deltaToTargetDistance,
+            targetDistanceMeters: <int?>[1, 1, 1],
+            travelMode: NavigationTravelMode.taxi,
+            avoidTolls: true,
+            avoidFerries: true,
+            avoidHighways: true,
+            locationTimeoutMs: 10000,
+          );
 
-          when(sessionMockApi.simulateLocationsAlongNewRouteWithRoutingOptions(
-                  any, any))
-              .thenAnswer(
-                  (Invocation _) async => RouteStatusDto.statusCanceled);
+          when(
+            sessionMockApi.simulateLocationsAlongNewRouteWithRoutingOptions(
+              any,
+              any,
+            ),
+          ).thenAnswer((Invocation _) async => RouteStatusDto.statusCanceled);
 
           final NavigationRouteStatus statusOut2 = await GoogleMapsNavigator
               .simulator
               .simulateLocationsAlongNewRouteWithRoutingOptions(
-                  <NavigationWaypoint>[waypointIn], routingOptionsIn);
+                <NavigationWaypoint>[waypointIn],
+                routingOptionsIn,
+              );
           expect(statusOut2, NavigationRouteStatus.statusCanceled);
 
           final VerificationResult routeResult2 = verify(
-              sessionMockApi.simulateLocationsAlongNewRouteWithRoutingOptions(
-                  captureAny, captureAny));
+            sessionMockApi.simulateLocationsAlongNewRouteWithRoutingOptions(
+              captureAny,
+              captureAny,
+            ),
+          );
 
           final List<NavigationWaypointDto?> waypoints2 =
               routeResult2.captured[0] as List<NavigationWaypointDto?>;
@@ -942,10 +1272,14 @@ void main() {
 
           final RoutingOptionsDto routingOptionsOut =
               routeResult2.captured[1] as RoutingOptionsDto;
-          expect(routingOptionsOut.alternateRoutesStrategy,
-              AlternateRoutesStrategyDto.none);
-          expect(routingOptionsOut.routingStrategy,
-              RoutingStrategyDto.deltaToTargetDistance);
+          expect(
+            routingOptionsOut.alternateRoutesStrategy,
+            AlternateRoutesStrategyDto.none,
+          );
+          expect(
+            routingOptionsOut.routingStrategy,
+            RoutingStrategyDto.deltaToTargetDistance,
+          );
           expect(routingOptionsOut.targetDistanceMeters, <int?>[1, 1, 1]);
           expect(routingOptionsOut.travelMode, TravelModeDto.taxi);
           expect(routingOptionsOut.avoidTolls, true);
@@ -955,21 +1289,31 @@ void main() {
 
           // Simulate the locations along a new route with routing and simulation options.
 
-          when(sessionMockApi
-                  .simulateLocationsAlongNewRouteWithRoutingAndSimulationOptions(
-                      any, any, any))
-              .thenAnswer((Invocation _) async => RouteStatusDto.statusOk);
+          when(
+            sessionMockApi
+                .simulateLocationsAlongNewRouteWithRoutingAndSimulationOptions(
+                  any,
+                  any,
+                  any,
+                ),
+          ).thenAnswer((Invocation _) async => RouteStatusDto.statusOk);
           final NavigationRouteStatus statusOut3 = await GoogleMapsNavigator
               .simulator
               .simulateLocationsAlongNewRouteWithRoutingAndSimulationOptions(
-                  <NavigationWaypoint>[waypointIn],
-                  routingOptionsIn,
-                  simOptionsIn);
+                <NavigationWaypoint>[waypointIn],
+                routingOptionsIn,
+                simOptionsIn,
+              );
           expect(statusOut3, NavigationRouteStatus.statusOk);
 
-          final VerificationResult routeResult3 = verify(sessionMockApi
-              .simulateLocationsAlongNewRouteWithRoutingAndSimulationOptions(
-                  captureAny, captureAny, captureAny));
+          final VerificationResult routeResult3 = verify(
+            sessionMockApi
+                .simulateLocationsAlongNewRouteWithRoutingAndSimulationOptions(
+                  captureAny,
+                  captureAny,
+                  captureAny,
+                ),
+          );
 
           final List<NavigationWaypointDto?> waypoints3 =
               routeResult3.captured[0] as List<NavigationWaypointDto?>;
@@ -980,10 +1324,14 @@ void main() {
 
           final RoutingOptionsDto routingOptionsOut2 =
               routeResult3.captured[1] as RoutingOptionsDto;
-          expect(routingOptionsOut2.alternateRoutesStrategy,
-              AlternateRoutesStrategyDto.none);
-          expect(routingOptionsOut2.routingStrategy,
-              RoutingStrategyDto.deltaToTargetDistance);
+          expect(
+            routingOptionsOut2.alternateRoutesStrategy,
+            AlternateRoutesStrategyDto.none,
+          );
+          expect(
+            routingOptionsOut2.routingStrategy,
+            RoutingStrategyDto.deltaToTargetDistance,
+          );
           expect(routingOptionsOut2.targetDistanceMeters, <int?>[1, 1, 1]);
           expect(routingOptionsOut2.travelMode, TravelModeDto.taxi);
           expect(routingOptionsOut2.avoidTolls, true);
@@ -1000,23 +1348,30 @@ void main() {
       group('Markers', () {
         test('get markers', () async {
           // Create marker
-          const Marker marker =
-              Marker(markerId: 'Marker_0', options: MarkerOptions());
+          const Marker marker = Marker(
+            markerId: 'Marker_0',
+            options: MarkerOptions(),
+          );
 
           // Mock api response
-          final MarkerDto messageMarker =
-              MarkerDto(markerId: 'Marker_0', options: marker.options.toDto());
-          when(viewMockApi.getMarkers(any))
-              .thenAnswer((Invocation _) => <MarkerDto>[messageMarker]);
+          final MarkerDto messageMarker = MarkerDto(
+            markerId: 'Marker_0',
+            options: marker.options.toDto(),
+          );
+          when(
+            viewMockApi.getMarkers(any),
+          ).thenAnswer((Invocation _) => <MarkerDto>[messageMarker]);
 
           // Get markers
           final List<Marker?> markersOut = await GoogleMapsNavigationPlatform
-              .instance.viewAPI
+              .instance
+              .viewAPI
               .getMarkers(viewId: 0);
 
           // Verify correct message sent from view api
-          final VerificationResult result =
-              verify(viewMockApi.getMarkers(captureAny));
+          final VerificationResult result = verify(
+            viewMockApi.getMarkers(captureAny),
+          );
           final int viewId = result.captured[0] as int;
 
           // Verify response polygon options
@@ -1027,30 +1382,36 @@ void main() {
         test('add marker', () async {
           // Create options
           const MarkerOptions optionsIn = MarkerOptions(
-              alpha: 0.5,
-              anchor: MarkerAnchor(u: 0.1, v: 0.2),
-              draggable: true,
-              flat: true,
-              consumeTapEvents: true,
-              position: LatLng(latitude: 50, longitude: 60),
-              rotation: 70,
-              infoWindow: InfoWindow(title: 'Title', snippet: 'Snippet'),
-              zIndex: 2);
+            alpha: 0.5,
+            anchor: MarkerAnchor(u: 0.1, v: 0.2),
+            draggable: true,
+            flat: true,
+            consumeTapEvents: true,
+            position: LatLng(latitude: 50, longitude: 60),
+            rotation: 70,
+            infoWindow: InfoWindow(title: 'Title', snippet: 'Snippet'),
+            zIndex: 2,
+          );
 
           // Mock api response
-          final MarkerDto markerIn =
-              MarkerDto(markerId: 'Marker_0', options: optionsIn.toDto());
-          when(viewMockApi.addMarkers(any, any))
-              .thenAnswer((Invocation _) => <MarkerDto>[markerIn]);
+          final MarkerDto markerIn = MarkerDto(
+            markerId: 'Marker_0',
+            options: optionsIn.toDto(),
+          );
+          when(
+            viewMockApi.addMarkers(any, any),
+          ).thenAnswer((Invocation _) => <MarkerDto>[markerIn]);
 
           // Add marker
           final List<Marker?> markersOut = await GoogleMapsNavigationPlatform
-              .instance.viewAPI
+              .instance
+              .viewAPI
               .addMarkers(viewId: 0, markerOptions: <MarkerOptions>[optionsIn]);
 
           // Verify correct message sent from view api
-          final VerificationResult result =
-              verify(viewMockApi.addMarkers(captureAny, captureAny));
+          final VerificationResult result = verify(
+            viewMockApi.addMarkers(captureAny, captureAny),
+          );
           final List<MarkerDto?> markersInMessage =
               result.captured[1] as List<MarkerDto?>;
 
@@ -1062,49 +1423,64 @@ void main() {
 
         test('update marker', () async {
           // Create marker
-          const Marker marker =
-              Marker(markerId: 'Marker_0', options: MarkerOptions());
+          const Marker marker = Marker(
+            markerId: 'Marker_0',
+            options: MarkerOptions(),
+          );
 
           // Mock api response
-          final MarkerDto messageMarker =
-              MarkerDto(markerId: 'Marker_0', options: marker.options.toDto());
-          when(viewMockApi.updateMarkers(any, any))
-              .thenAnswer((Invocation _) => <MarkerDto>[messageMarker]);
+          final MarkerDto messageMarker = MarkerDto(
+            markerId: 'Marker_0',
+            options: marker.options.toDto(),
+          );
+          when(
+            viewMockApi.updateMarkers(any, any),
+          ).thenAnswer((Invocation _) => <MarkerDto>[messageMarker]);
 
           // Edit marker
           final List<Marker?> markersOut = await GoogleMapsNavigationPlatform
-              .instance.viewAPI
+              .instance
+              .viewAPI
               .updateMarkers(viewId: 0, markers: <Marker>[marker]);
 
           // Verify correct message sent from view api
-          final VerificationResult result =
-              verify(viewMockApi.updateMarkers(captureAny, captureAny));
+          final VerificationResult result = verify(
+            viewMockApi.updateMarkers(captureAny, captureAny),
+          );
           final List<MarkerDto?> markersInMessage =
               result.captured[1] as List<MarkerDto?>;
 
           // Verify message and response marker options
           expect(marker.markerId, markersInMessage[0]?.markerId);
           expect(
-              marker.options, markersInMessage[0]?.options.toMarkerOptions());
+            marker.options,
+            markersInMessage[0]?.options.toMarkerOptions(),
+          );
           expect(marker.options, markersOut[0]!.options);
         });
 
         test('remove marker', () async {
           // Create marker
-          const Marker marker =
-              Marker(markerId: 'Marker_0', options: MarkerOptions());
+          const Marker marker = Marker(
+            markerId: 'Marker_0',
+            options: MarkerOptions(),
+          );
 
           // Mock api response
-          when(viewMockApi.removeMarkers(any, any))
-              .thenAnswer((Invocation _) => ());
+          when(
+            viewMockApi.removeMarkers(any, any),
+          ).thenAnswer((Invocation _) => ());
 
           // Remove marker
-          await GoogleMapsNavigationPlatform.instance.viewAPI
-              .removeMarkers(viewId: 0, markers: <Marker>[marker]);
+          await GoogleMapsNavigationPlatform.instance.viewAPI.removeMarkers(
+            viewId: 0,
+            markers: <Marker>[marker],
+          );
 
           // Verify correct message sent from view api
-          final VerificationResult result =
-              verify(viewMockApi.removeMarkers(captureAny, captureAny));
+          final VerificationResult result = verify(
+            viewMockApi.removeMarkers(captureAny, captureAny),
+          );
           final List<MarkerDto?> markersInMessage =
               result.captured[1] as List<MarkerDto?>;
 
@@ -1114,16 +1490,19 @@ void main() {
 
         test('clear markers', () async {
           // Mock api response
-          when(viewMockApi.clearMarkers(any))
-              .thenAnswer((Invocation _) async => ());
+          when(
+            viewMockApi.clearMarkers(any),
+          ).thenAnswer((Invocation _) async => ());
 
           // Clear map
-          await GoogleMapsNavigationPlatform.instance.viewAPI
-              .clearMarkers(viewId: 0);
+          await GoogleMapsNavigationPlatform.instance.viewAPI.clearMarkers(
+            viewId: 0,
+          );
 
           // Verify correct message sent from view api
-          final VerificationResult result =
-              verify(viewMockApi.clearMarkers(captureAny));
+          final VerificationResult result = verify(
+            viewMockApi.clearMarkers(captureAny),
+          );
           final int viewId = result.captured[0] as int;
 
           // Verify message
@@ -1138,8 +1517,9 @@ void main() {
           await GoogleMapsNavigationPlatform.instance.viewAPI.clear(viewId: 0);
 
           // Verify correct message sent from view api
-          final VerificationResult result =
-              verify(viewMockApi.clear(captureAny));
+          final VerificationResult result = verify(
+            viewMockApi.clear(captureAny),
+          );
           final int viewId = result.captured[0] as int;
 
           // Verify message
@@ -1150,23 +1530,30 @@ void main() {
       group('Polygons', () {
         test('get polygons', () async {
           // Create polygon
-          const Polygon polygon =
-              Polygon(polygonId: 'Polygon_0', options: PolygonOptions());
+          const Polygon polygon = Polygon(
+            polygonId: 'Polygon_0',
+            options: PolygonOptions(),
+          );
 
           // Mock api response
           final PolygonDto messagePolygon = PolygonDto(
-              polygonId: 'Polygon_0', options: polygon.options.toDto());
-          when(viewMockApi.getPolygons(any))
-              .thenAnswer((Invocation _) => <PolygonDto>[messagePolygon]);
+            polygonId: 'Polygon_0',
+            options: polygon.options.toDto(),
+          );
+          when(
+            viewMockApi.getPolygons(any),
+          ).thenAnswer((Invocation _) => <PolygonDto>[messagePolygon]);
 
           // Get polygons
           final List<Polygon?> polygonsOut = await GoogleMapsNavigationPlatform
-              .instance.viewAPI
+              .instance
+              .viewAPI
               .getPolygons(viewId: 0);
 
           // Verify correct message sent from view api
-          final VerificationResult result =
-              verify(viewMockApi.getPolygons(captureAny));
+          final VerificationResult result = verify(
+            viewMockApi.getPolygons(captureAny),
+          );
           final int viewId = result.captured[0] as int;
 
           // Verify response polygon options
@@ -1177,33 +1564,40 @@ void main() {
         test('add polygon', () async {
           // Create options
           const PolygonOptions optionsIn = PolygonOptions(
-              points: <LatLng>[
-                LatLng(latitude: 40.0, longitude: 50.0)
-              ],
-              holes: <List<LatLng>>[
-                <LatLng>[LatLng(latitude: 60.0, longitude: 70.0)]
-              ],
-              clickable: true,
-              fillColor: Colors.amber,
-              geodesic: true,
-              strokeColor: Colors.cyan,
-              strokeWidth: 4,
-              zIndex: 3);
+            points: <LatLng>[LatLng(latitude: 40.0, longitude: 50.0)],
+            holes: <List<LatLng>>[
+              <LatLng>[LatLng(latitude: 60.0, longitude: 70.0)],
+            ],
+            clickable: true,
+            fillColor: Colors.amber,
+            geodesic: true,
+            strokeColor: Colors.cyan,
+            strokeWidth: 4,
+            zIndex: 3,
+          );
 
           // Mock api response
-          final PolygonDto polygonIn =
-              PolygonDto(polygonId: 'Polygon_0', options: optionsIn.toDto());
-          when(viewMockApi.addPolygons(any, any))
-              .thenAnswer((Invocation _) => <PolygonDto>[polygonIn]);
+          final PolygonDto polygonIn = PolygonDto(
+            polygonId: 'Polygon_0',
+            options: optionsIn.toDto(),
+          );
+          when(
+            viewMockApi.addPolygons(any, any),
+          ).thenAnswer((Invocation _) => <PolygonDto>[polygonIn]);
 
           // Add polygon
-          final List<Polygon?> polygonsOut =
-              await GoogleMapsNavigationPlatform.instance.viewAPI.addPolygons(
-                  viewId: 0, polygonOptions: <PolygonOptions>[optionsIn]);
+          final List<Polygon?> polygonsOut = await GoogleMapsNavigationPlatform
+              .instance
+              .viewAPI
+              .addPolygons(
+                viewId: 0,
+                polygonOptions: <PolygonOptions>[optionsIn],
+              );
 
           // Verify correct message sent from view api
-          final VerificationResult result =
-              verify(viewMockApi.addPolygons(captureAny, captureAny));
+          final VerificationResult result = verify(
+            viewMockApi.addPolygons(captureAny, captureAny),
+          );
           final List<PolygonDto?> polygonsInMessage =
               result.captured[1] as List<PolygonDto?>;
 
@@ -1215,49 +1609,64 @@ void main() {
 
         test('update polygon', () async {
           // Create polygon
-          const Polygon polygon =
-              Polygon(polygonId: 'Polygon_0', options: PolygonOptions());
+          const Polygon polygon = Polygon(
+            polygonId: 'Polygon_0',
+            options: PolygonOptions(),
+          );
 
           // Mock api response
           final PolygonDto messagePolygon = PolygonDto(
-              polygonId: 'Polygon_0', options: polygon.options.toDto());
-          when(viewMockApi.updatePolygons(any, any))
-              .thenAnswer((Invocation _) => <PolygonDto>[messagePolygon]);
+            polygonId: 'Polygon_0',
+            options: polygon.options.toDto(),
+          );
+          when(
+            viewMockApi.updatePolygons(any, any),
+          ).thenAnswer((Invocation _) => <PolygonDto>[messagePolygon]);
 
           // Edit polygon
           final List<Polygon?> polygonsOut = await GoogleMapsNavigationPlatform
-              .instance.viewAPI
+              .instance
+              .viewAPI
               .updatePolygons(viewId: 0, polygons: <Polygon>[polygon]);
 
           // Verify correct message sent from view api
-          final VerificationResult result =
-              verify(viewMockApi.updatePolygons(captureAny, captureAny));
+          final VerificationResult result = verify(
+            viewMockApi.updatePolygons(captureAny, captureAny),
+          );
           final List<PolygonDto?> polygonsInMessage =
               result.captured[1] as List<PolygonDto?>;
 
           // Verify message and response polygon options
           expect(polygon.polygonId, polygonsInMessage[0]?.polygonId);
-          expect(polygon.options,
-              polygonsInMessage[0]?.options.toPolygonOptions());
+          expect(
+            polygon.options,
+            polygonsInMessage[0]?.options.toPolygonOptions(),
+          );
           expect(polygon.options, polygonsOut[0]!.options);
         });
 
         test('remove polygon', () async {
           // Create polygon
-          const Polygon polygon =
-              Polygon(polygonId: 'Polygon_0', options: PolygonOptions());
+          const Polygon polygon = Polygon(
+            polygonId: 'Polygon_0',
+            options: PolygonOptions(),
+          );
 
           // Mock api response
-          when(viewMockApi.removePolygons(any, any))
-              .thenAnswer((Invocation _) async => ());
+          when(
+            viewMockApi.removePolygons(any, any),
+          ).thenAnswer((Invocation _) async => ());
 
           // Remove polygon
-          await GoogleMapsNavigationPlatform.instance.viewAPI
-              .removePolygons(viewId: 0, polygons: <Polygon>[polygon]);
+          await GoogleMapsNavigationPlatform.instance.viewAPI.removePolygons(
+            viewId: 0,
+            polygons: <Polygon>[polygon],
+          );
 
           // Verify correct message sent from view api
-          final VerificationResult result =
-              verify(viewMockApi.removePolygons(captureAny, captureAny));
+          final VerificationResult result = verify(
+            viewMockApi.removePolygons(captureAny, captureAny),
+          );
           final List<PolygonDto?> polygonsInMessage =
               result.captured[1] as List<PolygonDto?>;
 
@@ -1267,16 +1676,19 @@ void main() {
 
         test('clear polygons', () async {
           // Mock api response
-          when(viewMockApi.clearPolygons(any))
-              .thenAnswer((Invocation _) async => ());
+          when(
+            viewMockApi.clearPolygons(any),
+          ).thenAnswer((Invocation _) async => ());
 
           // Clear map
-          await GoogleMapsNavigationPlatform.instance.viewAPI
-              .clearPolygons(viewId: 0);
+          await GoogleMapsNavigationPlatform.instance.viewAPI.clearPolygons(
+            viewId: 0,
+          );
 
           // Verify correct message sent from view api
-          final VerificationResult result =
-              verify(viewMockApi.clearPolygons(captureAny));
+          final VerificationResult result = verify(
+            viewMockApi.clearPolygons(captureAny),
+          );
           final int viewId = result.captured[0] as int;
 
           // Verify message

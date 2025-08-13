@@ -26,8 +26,10 @@ class Destinations {
     required this.displayOptions,
     this.routingOptions,
     this.routeTokenOptions,
-  }) : assert(routeTokenOptions == null || routingOptions == null,
-            'Only one of routeTokenOptions or routingOptions can be provided');
+  }) : assert(
+         routeTokenOptions == null || routingOptions == null,
+         'Only one of routeTokenOptions or routingOptions can be provided',
+       );
 
   /// List of navigation waypoints.
   final List<NavigationWaypoint> waypoints;
@@ -56,10 +58,7 @@ class RouteTokenOptions {
   ///
   /// The [travelMode] must match the travel mode used to generate
   /// the [routeToken].
-  RouteTokenOptions({
-    required this.routeToken,
-    required this.travelMode,
-  });
+  RouteTokenOptions({required this.routeToken, required this.travelMode});
 
   /// Route token.
   final String routeToken;
@@ -183,6 +182,9 @@ class NavigationDisplayOptions {
 
 /// Navigation waypoint with different constructors based in on type of
 /// initialization.
+///
+/// Either a [target] in the form of [LatLng] or a [placeID] must be provided.
+///
 /// {@category Navigation}
 class NavigationWaypoint {
   /// Initializer for [NavigationWaypoint].
@@ -192,8 +194,14 @@ class NavigationWaypoint {
     this.placeID,
     this.preferSameSideOfRoad,
     this.preferredSegmentHeading,
-  }) : assert(target != null || placeID != null,
-            'Either target or placeID must be provided');
+  }) : assert(
+         target != null || placeID != null,
+         'Either target or placeID must be provided',
+       ),
+       assert(
+         target == null || placeID == null,
+         'Cannot provide both target and placeID at the same time.',
+       );
 
   /// Initialize waypoint with coordinates.
   NavigationWaypoint.withLatLngTarget({
@@ -216,10 +224,7 @@ class NavigationWaypoint {
   });
 
   /// Initialize waypoint with placeID.
-  NavigationWaypoint.withPlaceID({
-    required this.title,
-    required this.placeID,
-  });
+  NavigationWaypoint.withPlaceID({required this.title, required this.placeID});
 
   /// Title of the waypoint.
   final String title;
@@ -291,17 +296,14 @@ enum NavigationRouteStatus {
   locationUnknown,
 
   /// Quota check failed
-  quotaCheckFailed
+  quotaCheckFailed,
 }
 
 /// Time and distance to next waypoint.
 /// {@category Navigation}
 class NavigationTimeAndDistance {
   /// Initialize with time and distance.
-  NavigationTimeAndDistance({
-    required this.time,
-    required this.distance,
-  });
+  NavigationTimeAndDistance({required this.time, required this.distance});
 
   /// Time to destination.
   final double time;

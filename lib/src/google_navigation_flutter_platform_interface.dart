@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:google_navigation_flutter/src/method_channel/method_channel.dart';
@@ -78,9 +79,11 @@ abstract class GoogleMapsNavigationPlatform extends PlatformInterface {
   ///
   /// The [onMapReady] callback is invoked once the platform view has been created
   /// and is ready for interaction.
-  Widget buildMapView(
-      {required MapViewInitializationOptions initializationOptions,
-      required MapReadyCallback onMapReady});
+  Widget buildMapView({
+    required MapViewInitializationOptions initializationOptions,
+    required PlatformViewCreatedCallback onPlatformViewCreated,
+    required MapReadyCallback onMapReady,
+  });
 
   /// Builds and returns a navigation view.
   ///
@@ -89,15 +92,18 @@ abstract class GoogleMapsNavigationPlatform extends PlatformInterface {
   ///
   /// The [onMapReady] callback is invoked once the platform view has been created
   /// and is ready for interaction.
-  Widget buildNavigationView(
-      {required MapViewInitializationOptions initializationOptions,
-      required MapReadyCallback onMapReady});
+  Widget buildNavigationView({
+    required MapViewInitializationOptions initializationOptions,
+    required PlatformViewCreatedCallback onPlatformViewCreated,
+    required MapReadyCallback onMapReady,
+  });
 
   /// Populates [GoogleNavigationInspectorPlatform.instance] to allow
   /// inspecting the platform map state.
   @visibleForTesting
   void enableDebugInspection() {
     throw UnimplementedError(
-        'enableDebugInspection() has not been implemented.');
+      'enableDebugInspection() has not been implemented.',
+    );
   }
 }

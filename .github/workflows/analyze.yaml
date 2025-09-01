@@ -70,14 +70,22 @@ jobs:
         with:
           path: /home/linuxbrew/.linuxbrew
           key: ${{ runner.os }}-linuxbrew
+<<<<<<< HEAD
       - name: Install swiftformat 0.54.6
+=======
+      - name: Install swift-format 601.0.0
+>>>>>>> upstream/main
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+<<<<<<< HEAD
           curl -O https://raw.githubusercontent.com/Homebrew/homebrew-core/4564fbc21a326c4eb349327ce327cbe983bf302a/Formula/s/swiftformat.rb
           echo 'brew "swiftformat.rb"' > Brewfile
           brew bundle
+=======
+          brew install swift-format
+>>>>>>> upstream/main
       - name: Save Cache
         uses: actions/cache/save@v4
         if: steps.cache.outputs.cache-hit != 'true'

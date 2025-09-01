@@ -153,7 +153,7 @@ class GoogleMapsNavigationSessionMessageHandler : NavigationSessionApi {
     if (currentRouteSegment != null) {
       return Convert.convertRouteSegmentToDto(currentRouteSegment)
     }
-    return null  
+    return null
   }
 
   override fun getCurrentRouteLeg(): RouteLegDto? {

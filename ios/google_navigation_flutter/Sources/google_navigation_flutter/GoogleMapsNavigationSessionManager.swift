@@ -477,9 +477,12 @@ class GoogleMapsNavigationSessionManager: NSObject {
     try Convert.convertPath(getNavigator().traveledPath)
   }
 
-  func getCurrentRouteSegment() throws -> RouteSegmentDto? {
-    guard let currentRouteLeg = try getNavigator().currentRouteLeg else { return nil }
-    return Convert.convertRouteSegment(currentRouteLeg)
+  func getCurrentRouteSegment() throws -> [LatLngDto] {
+
+    return try getNavigator().currentRouteLeg
+  }
+  func getCurrentRouteLeg() throws -> [LatLngDto] {
+    try Convert.convertPath(getNavigator().traveledPath)
   }
 
   /// Listeners

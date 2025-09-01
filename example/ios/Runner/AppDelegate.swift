@@ -31,7 +31,7 @@ import UIKit
     if mapsApiKey.isEmpty {
       mapsApiKey = "YOUR_API_KEY"
     }
-    GMSServices.provideAPIKey(mapsApiKey)
+    GMSServices.provideAPIKey("AIzaSyAFjKbrWy1s_k3VbraaPBBhXmuFdknfq0U")
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }

@@ -587,7 +587,11 @@ class GoogleMapsNavigator {
     return GoogleMapsNavigationPlatform.instance.navigationSessionAPI
         .getCurrentRouteSegment();
   }
-
+  /// Get current route segment.
+  static Future<Map<String, dynamic>?>  getCurrentRouteLeg() {
+    return GoogleMapsNavigationPlatform.instance.navigationSessionAPI
+        .getCurrentRouteLeg();
+  }
   static Future<void> enableTurnByTurnNavigationEvents(
     int? numNextStepsToPreview,
   ) {

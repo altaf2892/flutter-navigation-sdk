@@ -581,6 +581,21 @@ class NavigationSessionAPIImpl {
       }
     }
   }
+  /// Get current route leg (raw Map from iOS).
+  Future<Map<String, dynamic>?> getCurrentRouteLeg() async {
+    try {
+      final Map<Object?, Object?>? leg =
+      await _sessionApi.getCurrentRouteLeg(); // <-- new Pigeon call
+      return leg?.cast<String, dynamic>();
+    } on PlatformException catch (e) {
+      switch (e.code) {
+        case 'sessionNotInitialized':
+          throw const SessionNotInitializedException();
+        default:
+          rethrow;
+      }
+    }
+  }
 
   /// Get navigation speeding event stream from the navigation session.
   Stream<SpeedingUpdatedEvent> getNavigationSpeedingEventStream() {

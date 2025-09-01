@@ -234,6 +234,23 @@ class GoogleMapsNavigationSessionMessageHandler: NavigationSessionApi {
   func getCurrentRouteSegment() throws -> RouteSegmentDto? {
     try GoogleMapsNavigationSessionManager.shared.getCurrentRouteSegment()
   }
+    func getCurrentRouteLeg() throws -> [LatLngDto]? {
+      guard let leg = GoogleMapsNavigationSessionManager.shared.getCurrentRouteLeg() else {
+        return nil
+      }
+
+      // Convert the native path to a Flutter-friendly DTO
+      let path = leg.path
+      var coordinates: [LatLngDto] = []
+
+      for i in 0..<path.count() {
+        let coord = path.coordinate(at: i)
+        coordinates.append(LatLngDto(lat: coord.latitude, lng: coord.longitude))
+      }
+
+      return coordinates
+    }
+
 
   /// Listeners
   func enableRoadSnappedLocationUpdates() throws {

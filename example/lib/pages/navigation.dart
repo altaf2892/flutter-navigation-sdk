@@ -437,6 +437,9 @@ class _NavigationPageState extends ExamplePageState<NavigationPage> {
       _remainingDistance = event.remainingDistance.toInt();
       _remainingTime = event.remainingTime.toInt();
       _onRemainingTimeOrDistanceChangedEventCallCount += 1;
+      Future.microtask(() async {
+        print('getCurrentRouteLeg: ${(await GoogleMapsNavigator.getCurrentRouteLeg())}');
+      });
     });
   }
 

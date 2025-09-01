@@ -156,6 +156,14 @@ class GoogleMapsNavigationSessionMessageHandler : NavigationSessionApi {
     return null
   }
 
+  override fun getCurrentRouteLeg(): RouteLegDto? {
+    val currentRouteLeg = manager().getCurrentRouteLeg()
+    if (currentRouteLeg != null) {
+      return currentRouteLeg;
+    }
+    return null
+  }
+
   override fun setUserLocation(location: LatLngDto) {
     manager().setUserLocation(LatLng(location.latitude, location.longitude))
   }
